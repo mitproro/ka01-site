@@ -115,14 +115,14 @@
   .stat-val { font-size: 22px; font-weight: 800; color: var(--accent); font-family: var(--mono); margin-bottom: 5px; }
   .stat-desc { font-size: 12px; color: var(--muted); }
 
-  /* КРАСИВЫЕ ГРАФИКИ */
+  /* КРАСИВЫЕ ГРАФИКИ (ТЕКСТОВЫЕ) */
   .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
   .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); }
-  .chart-card h3 { font-size: 16px; margin-bottom: 20px; color: var(--text); }
-  .progress-row { margin-bottom: 20px; }
-  .progress-label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; font-weight: 600;}
-  .progress-bar-bg { width: 100%; height: 10px; background: var(--bg); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 10px; width: 0; transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .chart-card h3 { font-size: 16px; margin-bottom: 20px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+  .specs-list { list-style: none; padding: 0; margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+  .specs-list li { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
+  .specs-list li:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .specs-list li span:first-child { color: var(--text); font-weight: 600; display: block; margin-bottom: 4px; }
 
   /* CARDS & ACCORDION */
   .accordion-container { display: flex; flex-direction: column; gap: 15px; }
@@ -308,37 +308,23 @@
       <div class="stat-item"><div class="stat-val">ВсОШ</div><div class="stat-desc" data-i18n="stat_4">Олимпиадный проект</div></div>
     </div>
 
-    <!-- КРАСИВЫЕ ГРАФИКИ НА ГЛАВНОЙ -->
+    <!-- ИЗМЕРИМЫЕ ПОКАЗАТЕЛИ (ЗАМЕНА ШКАЛ) -->
     <div class="charts-grid" style="margin-top: 40px;">
       <div class="chart-card">
-        <h3>Скорость и дальность</h3>
-        <div class="progress-row">
-          <div class="progress-label"><span>Дальность приема (с антенной)</span><span>95%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" data-width="95%"></div></div>
-        </div>
-        <div class="progress-row">
-          <div class="progress-label"><span>Скорость сканирования каналов</span><span>85%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" data-width="85%"></div></div>
-        </div>
-        <div class="progress-row">
-          <div class="progress-label"><span>Точность определения устройств</span><span>90%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" data-width="90%"></div></div>
-        </div>
+        <h3 data-i18n="chart_title_1">Скорость и дальность</h3>
+        <ul class="specs-list">
+          <li><span data-i18n="chart_1_k">Дальность приема (с внешней SMA-антенной):</span> <span data-i18n="chart_1_v">примерно до 100–150 м на открытой местности и около 50 м в помещении (через стены)</span></li>
+          <li><span data-i18n="chart_2_k">Скорость сканирования каналов:</span> <span data-i18n="chart_2_v">полный проход по 14 каналам за ~20 сек</span></li>
+          <li><span data-i18n="chart_3_k">Точность определения устройств:</span> <span data-i18n="chart_3_v">фиксация MAC-адресов и RSSI в реальном времени</span></li>
+        </ul>
       </div>
       <div class="chart-card">
-        <h3>Эргономика и автономность</h3>
-        <div class="progress-row">
-          <div class="progress-label"><span>Время работы от батареи</span><span>80%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" data-width="80%"></div></div>
-        </div>
-        <div class="progress-row">
-          <div class="progress-label"><span>Удобство работы стилусом</span><span>100%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" data-width="100%"></div></div>
-        </div>
-        <div class="progress-row">
-          <div class="progress-label"><span>Компактность и вес</span><span>90%</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" data-width="90%"></div></div>
-        </div>
+        <h3 data-i18n="chart_title_2">Эргономика и автономность</h3>
+        <ul class="specs-list">
+          <li><span data-i18n="chart_4_k">Время работы от батареи:</span> <span data-i18n="chart_4_v">4–5 часов активного сканирования</span></li>
+          <li><span data-i18n="chart_5_k">Управление:</span> <span data-i18n="chart_5_v">резистивный сенсорный экран 2.8" (точная навигация стилусом)</span></li>
+          <li><span data-i18n="chart_6_k">Габариты и вес:</span> <span data-i18n="chart_6_v">компактный корпус из ABS-пластика (153 г), помещается в карман</span></li>
+        </ul>
       </div>
     </div>
   </section>
@@ -373,21 +359,22 @@
           <p><b>Port Scan:</b> Поиск открытых портов уязвимых устройств.</p>
         </div></div>
       </div>
+      <!-- ИЗМЕНЕННЫЙ БЛОК 4 -->
       <div class="accordion-item">
-        <div class="accordion-header" style="color: var(--danger);" onclick="toggleAccordion(this)"><span>⚠️ Wi-Fi Атаки (Тестирование)</span><span class="icon" style="color: var(--danger);">▼</span></div>
+        <div class="accordion-header" onclick="toggleAccordion(this)"><span data-i18n="feat_audit_wifi">🛡 Стресс-тестирование Wi-Fi (Аудит устойчивости)</span><span class="icon">▼</span></div>
         <div class="accordion-body"><div class="accordion-content">
-          <p style="color:var(--danger); margin-bottom:10px;">⚠️ Только для тестирования собственных сетей!</p>
-          <p><b>Beacon Spam:</b> Создание сотен фейковых сетей для проверки стабильности гаджетов.</p>
-          <p><b>Deauth Flood:</b> Разрыв соединения для аудита защищенности камер.</p>
-          <p><b>Evil Portal:</b> Фишинговая страница для демонстрации рисков открытого Wi-Fi.</p>
+          <p style="color:var(--warn); margin-bottom:10px;" data-i18n="feat_audit_wifi_warn">⚠ Исключительно для проверки собственных сетей и демонстрации на стендах!</p>
+          <p data-i18n="feat_audit_1"><b>Beacon Spam:</b> генерация тестовых маяков (SSID) для проверки стабильности работы клиентских устройств при высокой загруженности эфира.</p>
+          <p data-i18n="feat_audit_2"><b>Deauth Flood:</b> имитация разрыва соединения для проверки устойчивости камер видеонаблюдения и IoT-устройств к атакам деаутентификации.</p>
+          <p data-i18n="feat_audit_3"><b>Evil Portal:</b> локальная демонстрационная страница (Captive Portal) для наглядного изучения рисков подключения к открытым точкам доступа.</p>
         </div></div>
       </div>
+      <!-- ИЗМЕНЕННЫЙ БЛОК 5 -->
       <div class="accordion-item">
-        <div class="accordion-header" style="color: var(--danger);" onclick="toggleAccordion(this)"><span>🔵 Bluetooth Атаки и Сниффинг</span><span class="icon" style="color: var(--danger);">▼</span></div>
+        <div class="accordion-header" onclick="toggleAccordion(this)"><span data-i18n="feat_audit_bt">🔵 Аудит Bluetooth и BLE</span><span class="icon">▼</span></div>
         <div class="accordion-body"><div class="accordion-content">
-          <p><b>Sour Apple / Apple Juice:</b> Спам краш-пакетами, вызывающий всплывающие окна на устройствах Apple.</p>
-          <p><b>Swiftpair Spam:</b> Атака на интерфейс Windows.</p>
-          <p><b>Detect Card Skimmer:</b> Поиск скрытых Bluetooth-модулей в банкоматах.</p>
+          <p data-i18n="feat_audit_bt_1"><b>BLE Advertisement Test (Sour Apple / Swiftpair):</b> генерация тестовых рекламных пакетов BLE для изучения механизмов обработки запросов сопряжения в iOS и Windows.</p>
+          <p data-i18n="feat_audit_bt_2"><b>Detect Card Skimmer:</b> пассивное сканирование эфира на наличие подозрительных скрытых Bluetooth-модулей.</p>
         </div></div>
       </div>
     </div>
@@ -458,7 +445,7 @@
     </div>
   </section>
 
-  <!-- ГАЛЕРЕЯ -->
+  <!-- ГАЛЕРЕЯ (НЕ ТРОГАЕМ) -->
   <section id="gallery" class="page-section">
     <div class="section-head"><h2 class="section-title" data-i18n="gal_title">Галерея</h2></div>
     <div class="gallery-grid">
@@ -472,15 +459,24 @@
     </div>
   </section>
 
-  <!-- ЗАКАЗ -->
+  <!-- ИЗМЕНЕННЫЙ БЛОК ЗАКАЗА -->
   <section id="order" class="page-section">
-    <div class="section-head"><h2 class="section-title" data-i18n="order_title">Заказать <span>устройство</span></h2></div>
+    <div class="section-head">
+      <h2 class="section-title" data-i18n="order_title">Заказать DIY-комплект для сборки</h2>
+      <p class="section-sub" data-i18n="order_desc">Хотите собрать KA-01 самостоятельно для изучения радиоэфира и микроконтроллеров? Оставьте заявку на комплект деталей (3D-корпус, плата и комплектующие) или задайте вопрос по проекту.</p>
+    </div>
     <div class="form-card">
       <form id="orderForm">
         <div class="form-group"><label data-i18n="form_name">Ваше имя</label><input type="text" class="form-control" id="orderName" placeholder="Иван Иванов" required></div>
-        <div class="form-group"><label data-i18n="form_contact">Email или Телефон для связи</label><input type="text" class="form-control" id="orderContact" placeholder="example@mail.ru" required></div>
-        <div class="form-group"><label data-i18n="form_qty">Количество (шт.)</label><input type="number" class="form-control" id="orderQty" value="1" min="1" required></div>
-        <div class="form-group"><label data-i18n="form_comment">Комментарий</label><textarea class="form-control" id="orderComment" placeholder="Какие функции вам нужны?"></textarea></div>
+        <div class="form-group"><label data-i18n="form_contact">Telegram или Email для связи</label><input type="text" class="form-control" id="orderContact" placeholder="@username или example@mail.ru" required></div>
+        <div class="form-group">
+          <label data-i18n="form_format">Формат</label>
+          <select class="form-control" id="orderFormat" required style="appearance: auto;">
+            <option value="DIY-набор для сборки" data-i18n="form_format_1">DIY-набор для сборки</option>
+            <option value="Консультация по проекту" data-i18n="form_format_2">Консультация по проекту</option>
+          </select>
+        </div>
+        <div class="form-group"><label data-i18n="form_comment">Комментарий</label><textarea class="form-control" id="orderComment" placeholder="Ваши вопросы или пожелания"></textarea></div>
         
         <div class="form-actions">
           <button type="button" class="btn btn-outline" onclick="sendOrderEmail()" data-i18n="form_email">Отправить на Email</button>
@@ -550,10 +546,18 @@
           <div class="spec-row"><span class="k">Класс</span><span class="v">9 «Г»</span></div>
           <div class="spec-row"><span class="k" data-i18n="pass_model">Модель</span><span class="v" style="color:var(--accent)">KA-01</span></div>
           
+          <!-- ИЗМЕНЕННЫЙ БЛОК КОНТАКТОВ -->
           <h3 style="margin-top:25px;" data-i18n="contacts_title">Связаться со мной</h3>
-          <p style="font-size:14px; margin-bottom:10px;">Есть вопросы? Напишите мне!</p>
-          <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <a href="https://t.me/mitproro" target="_blank" class="btn" style="padding:10px 15px; font-size:13px;">Telegram @mitproro</a>
+          <p style="font-size:14px; margin-bottom:15px;" data-i18n="contact_desc">Есть вопросы по сборке, прошивке или участию проекта в олимпиаде? Напишите мне напрямую или подписывайтесь на канал разработки!</p>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+            <a href="https://t.me/mitproro" target="_blank" class="btn" style="padding:10px 15px; font-size:13px; text-align:left; display:flex; align-items:center; gap:10px;">
+              <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/></svg>
+              <span data-i18n="contact_btn_personal">Личный Telegram @mitproro</span>
+            </a>
+            <a href="https://t.me/ka_01_tg" target="_blank" class="btn btn-outline" style="padding:10px 15px; font-size:13px; text-align:left; display:flex; align-items:center; gap:10px; border-color:var(--accent-2); color:var(--accent-2);">
+              <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/></svg>
+              <span data-i18n="contact_btn_channel">Канал KA-01 Project</span>
+            </a>
           </div>
           
           <div class="qr-box" style="text-align:center; background:rgba(0,0,0,0.1); padding:15px; border-radius:12px; border:1px dashed var(--border);">
@@ -575,7 +579,6 @@
   <footer class="site-footer">
     <div class="footer-text">© 2026 KA-01 Project. Создано Кузьминым Артемием.</div>
     <div class="footer-socials">
-      <!-- Ссылка на твой ТГ канал -->
       <a href="https://t.me/ka_01_tg" target="_blank" class="social-btn">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/></svg>
       </a>
@@ -605,13 +608,6 @@
     if (window.scrollY > 300) { scrollTopBtn.classList.add('show'); } else { scrollTopBtn.classList.remove('show'); }
   });
 
-  // ================= АНИМАЦИЯ ГРАФИКОВ =================
-  setTimeout(() => {
-    document.querySelectorAll('.progress-bar-fill').forEach(bar => {
-      bar.style.width = bar.getAttribute('data-width');
-    });
-  }, 800);
-
   // ================= ТЕМА =================
   const themeIcon = document.getElementById('themeIcon');
   function toggleTheme() {
@@ -634,11 +630,91 @@
 
   // ================= ЯЗЫКИ И РЕГИОНЫ =================
   const i18n = {
-    ru: { nav_home: "Обзор", nav_features: "Функционал", nav_specs: "Характеристики", nav_process: "Создание", nav_gallery: "Галерея", nav_order: "Заказать", nav_legal: "Безопасность", nav_faq: "FAQ", nav_about: "О проекте", hero_badge: "Модель KA-01 • Первое устройство", hero_title_1: "Карманный <span>аудитор</span> сети", hero_desc: "Представьте рентген для Wi-Fi. KA-01 видит невидимые волны. Создан с нуля. <b>К</b>узьмин <b>А</b>ртемий, устройство <b>01</b>.", hero_btn: "Возможности", hero_btn_order: "Заказать", stat_1: "Wi-Fi & BLE", stat_2: "Себестоимость", stat_3: "Автономность", stat_4: "ВсОШ", feat_title: "Изучаем <span>функционал</span>", feat_desc: "Нажмите на пункт.", specs_title: "Характеристики и <span>Аппаратная часть</span>", spec_cpu: "Процессор и Радио", spec_power: "Питание", proc_title: "История <span>создания</span>", gal_title: "Галерея", order_title: "Заказать <span>устройство</span>", form_name: "Ваше имя", form_contact: "Email или Телефон", form_qty: "Количество", form_comment: "Комментарий", form_email: "Отправить на Email", form_tg: "Отправить в Telegram", legal_title: "Безопасность и <span>Право</span>", faq_title: "Вопросы и <span>Ответы</span>", about_title: "О проекте", passport_title: "Паспорт", pass_author: "Автор", pass_model: "Модель", contacts_title: "Связаться" },
-    en: { nav_home: "Overview", nav_features: "Features", nav_specs: "Specs", nav_process: "Creation", nav_gallery: "Gallery", nav_order: "Order", nav_legal: "Safety", nav_faq: "FAQ", nav_about: "About", hero_badge: "Model KA-01 • First Device", hero_title_1: "Pocket Network <span>Auditor</span>", hero_desc: "Imagine an X-ray for Wi-Fi. KA-01 sees invisible waves. Name stands for: <b>K</b>uzmin <b>A</b>rtemiy, device <b>01</b>.", hero_btn: "Features", hero_btn_order: "Order", stat_1: "Wi-Fi & BLE", stat_2: "Cost", stat_3: "Battery", stat_4: "Olympiad", feat_title: "Explore <span>features</span>", feat_desc: "Click on item.", specs_title: "Specs & <span>Hardware</span>", spec_cpu: "CPU & Radio", spec_power: "Power", proc_title: "Creation <span>history</span>", gal_title: "Gallery", order_title: "Order <span>device</span>", form_name: "Your Name", form_contact: "Email or Phone", form_qty: "Quantity", form_comment: "Comment", form_email: "Send to Email", form_tg: "Send to Telegram", legal_title: "Safety & <span>Law</span>", faq_title: "Questions & <span>Answers</span>", about_title: "About", passport_title: "Passport", pass_author: "Author", pass_model: "Model", contacts_title: "Contact" },
-    de: { nav_home: "Übersicht", nav_features: "Funktionen", nav_specs: "Spezifikationen", nav_process: "Erstellung", nav_gallery: "Galerie", nav_order: "Bestellen", nav_legal: "Sicherheit", nav_faq: "FAQ", nav_about: "Über uns", hero_badge: "Modell KA-01 • Erstes Gerät", hero_title_1: "Taschen-<span>Auditor</span>", hero_desc: "Stellen Sie sich ein Röntgengerät für WLAN vor. Für Bildungszwecke.", hero_btn: "Funktionen", hero_btn_order: "Bestellen", stat_1: "WLAN-Audit", stat_2: "Selbstkosten", stat_3: "Akkulaufzeit", stat_4: "Olympia", feat_title: "Funktionen", feat_desc: "Klicken Sie hier.", specs_title: "Spezifikationen", spec_cpu: "CPU & Funk", spec_power: "Strom", proc_title: "Geschichte", gal_title: "Galerie", order_title: "Gerät <span>bestellen</span>", form_name: "Ihr Name", form_contact: "E-Mail oder Telefon", form_qty: "Menge", form_comment: "Kommentar", form_email: "An E-Mail senden", form_tg: "An Telegram senden", legal_title: "Sicherheit & <span>Recht</span>", faq_title: "Fragen & <span>Antworten</span>", about_title: "Über uns", passport_title: "Pass", pass_author: "Autor", pass_model: "Modell", contacts_title: "Kontakt" },
-    fi: { nav_home: "Yleiskatsaus", nav_features: "Ominaisuudet", nav_specs: "Tekniset tiedot", nav_process: "Luominen", nav_gallery: "Galleria", nav_order: "Tilaa", nav_legal: "Turvallisuus", nav_faq: "FAQ", nav_about: "Tietoja", hero_badge: "Malli KA-01 • Ensimmäinen laite", hero_title_1: "Tasku-<span>audiitori</span>", hero_desc: "Kuvittele röntgenlaite Wi-Fi:lle. Koulutustarkoituksiin.", hero_btn: "Ominaisuudet", hero_btn_order: "Tilaa", stat_1: "Wi-Fi auditointi", stat_2: "Omakustannushinta", stat_3: "Akkukesto", stat_4: "Olympia", feat_title: "Ominaisuudet", feat_desc: "Klikkaa kohdetta.", specs_title: "Tekniset tiedot", spec_cpu: "CPU & Radio", spec_power: "Virta", proc_title: "Historia", gal_title: "Galleria", order_title: "Tilaa <span>laite</span>", form_name: "Nimesi", form_contact: "Sähköposti tai puhelin", form_qty: "Määrä", form_comment: "Kommentti", form_email: "Lähetä sähköpostiin", form_tg: "Lähetä Telegramiin", legal_title: "Turvallisuus & <span>Laki</span>", faq_title: "Kysymykset & <span>Vastaukset</span>", about_title: "Tietoja", passport_title: "Passi", pass_author: "Tekijä", pass_model: "Malli", contacts_title: "Yhteystiedot" },
-    be: { nav_home: "Агляд", nav_features: "Функцыянал", nav_specs: "Характарыстыкі", nav_process: "Стварэнне", nav_gallery: "Галерэя", nav_order: "Заказаць", nav_legal: "Бяспека", nav_faq: "FAQ", nav_about: "Пра праект", hero_badge: "Мадэль KA-01 • Першая прылада", hero_title_1: "Кішэнны <span>аўдытар</span>", hero_desc: "Створаны для адукацыйных мэт.", hero_btn: "Функцыянал", hero_btn_order: "Заказаць", stat_1: "Аўдыт Wi-Fi", stat_2: "Сабекошт", stat_3: "Аўтаномнасць", stat_4: "Алімпіяда", feat_title: "Функцыянал", feat_desc: "Націсніце на пункт.", specs_title: "Характарыстыкі", spec_cpu: "Працэсар", spec_power: "Сілкаванне", proc_title: "Гісторыя", gal_title: "Галерэя", order_title: "Заказаць", form_name: "Ваша імя", form_contact: "Email ці Тэлефон", form_qty: "Колькасць", form_comment: "Каментарый", form_email: "Адправіць на Email", form_tg: "Адправіць у Telegram", legal_title: "Бяспека і <span>Права</span>", faq_title: "Пытанні і <span>Адказы</span>", about_title: "Пра праект", passport_title: "Пашпарт", pass_author: "Аўтар", pass_model: "Мадэль", contacts_title: "Кантакты" }
+    ru: { 
+      nav_home: "Обзор", nav_features: "Функционал", nav_specs: "Характеристики", nav_process: "Создание", nav_gallery: "Галерея", nav_order: "Заказать", nav_legal: "Безопасность", nav_faq: "FAQ", nav_about: "О проекте", 
+      hero_badge: "Модель KA-01 • Первое устройство", hero_title_1: "Карманный <span>аудитор</span> сети", 
+      hero_desc: "Представьте рентген для Wi-Fi. KA-01 видит невидимые волны. Создан с нуля. <b>К</b>узьмин <b>А</b>ртемий, устройство <b>01</b>.", hero_btn: "Возможности", hero_btn_order: "Заказать", 
+      stat_1: "Wi-Fi & BLE", stat_2: "Себестоимость", stat_3: "Автономность", stat_4: "ВсОШ", 
+      chart_title_1: "Скорость и дальность", chart_1_k: "Дальность приема (с внешней SMA-антенной):", chart_1_v: "примерно до 100–150 м на открытой местности и около 50 м в помещении (через стены)", chart_2_k: "Скорость сканирования каналов:", chart_2_v: "полный проход по 14 каналам за ~20 сек", chart_3_k: "Точность определения устройств:", chart_3_v: "фиксация MAC-адресов и RSSI в реальном времени",
+      chart_title_2: "Эргономика и автономность", chart_4_k: "Время работы от батареи:", chart_4_v: "4–5 часов активного сканирования", chart_5_k: "Управление:", chart_5_v: "резистивный сенсорный экран 2.8\" (точная навигация стилусом)", chart_6_k: "Габариты и вес:", chart_6_v: "компактный корпус из ABS-пластика (153 г), помещается в карман",
+      feat_title: "Изучаем <span>функционал</span>", feat_desc: "Нажмите на пункт.", 
+      feat_audit_wifi: "🛡 Стресс-тестирование Wi-Fi (Аудит устойчивости)", feat_audit_wifi_warn: "⚠ Исключительно для проверки собственных сетей и демонстрации на стендах!", feat_audit_1: "<b>Beacon Spam:</b> генерация тестовых маяков (SSID) для проверки стабильности работы клиентских устройств при высокой загруженности эфира.", feat_audit_2: "<b>Deauth Flood:</b> имитация разрыва соединения для проверки устойчивости камер видеонаблюдения и IoT-устройств к атакам деаутентификации.", feat_audit_3: "<b>Evil Portal:</b> локальная демонстрационная страница (Captive Portal) для наглядного изучения рисков подключения к открытым точкам доступа.", 
+      feat_audit_bt: "🔵 Аудит Bluetooth и BLE", feat_audit_bt_1: "<b>BLE Advertisement Test (Sour Apple / Swiftpair):</b> генерация тестовых рекламных пакетов BLE для изучения механизмов обработки запросов сопряжения в iOS и Windows.", feat_audit_bt_2: "<b>Detect Card Skimmer:</b> пассивное сканирование эфира на наличие подозрительных скрытых Bluetooth-модулей.",
+      specs_title: "Характеристики и <span>Аппаратная часть</span>", spec_cpu: "Процессор и Радио", spec_power: "Питание", 
+      proc_title: "История <span>создания</span>", gal_title: "Галерея", 
+      order_title: "Заказать DIY-комплект для сборки", order_desc: "Хотите собрать KA-01 самостоятельно для изучения радиоэфира и микроконтроллеров? Оставьте заявку на комплект деталей (3D-корпус, плата и комплектующие) или задайте вопрос по проекту.", 
+      form_name: "Ваше имя", form_contact: "Telegram или Email для связи", form_format: "Формат", form_format_1: "DIY-набор для сборки", form_format_2: "Консультация по проекту", form_comment: "Комментарий", form_email: "Отправить на Email", form_tg: "Отправить в Telegram", 
+      legal_title: "Безопасность и <span>Право</span>", faq_title: "Вопросы и <span>Ответы</span>", about_title: "О проекте", passport_title: "Паспорт", pass_author: "Автор", pass_model: "Модель", 
+      contacts_title: "Связаться со мной", contact_desc: "Есть вопросы по сборке, прошивке или участию проекта в олимпиаде? Напишите мне напрямую или подписывайтесь на канал разработки!", contact_btn_personal: "Личный Telegram @mitproro", contact_btn_channel: "Канал KA-01 Project"
+    },
+    en: { 
+      nav_home: "Overview", nav_features: "Features", nav_specs: "Specs", nav_process: "Creation", nav_gallery: "Gallery", nav_order: "Order", nav_legal: "Safety", nav_faq: "FAQ", nav_about: "About", 
+      hero_badge: "Model KA-01 • First Device", hero_title_1: "Pocket Network <span>Auditor</span>", 
+      hero_desc: "Imagine an X-ray for Wi-Fi. KA-01 sees invisible waves. Name stands for: <b>K</b>uzmin <b>A</b>rtemiy, device <b>01</b>.", hero_btn: "Features", hero_btn_order: "Order", 
+      stat_1: "Wi-Fi & BLE", stat_2: "Cost", stat_3: "Battery", stat_4: "Olympiad", 
+      chart_title_1: "Speed & Range", chart_1_k: "Range (with SMA antenna):", chart_1_v: "up to 100–150 m outdoors and ~50 m indoors (through walls)", chart_2_k: "Scan speed:", chart_2_v: "full pass of 14 channels in ~20 sec", chart_3_k: "Accuracy:", chart_3_v: "real-time MAC and RSSI capture",
+      chart_title_2: "Ergonomics & Battery", chart_4_k: "Battery life:", chart_4_v: "4–5 hours active scanning", chart_5_k: "Control:", chart_5_v: "2.8\" resistive touchscreen (precise stylus navigation)", chart_6_k: "Size & Weight:", chart_6_v: "compact ABS plastic case (153 g), pocket-sized",
+      feat_title: "Explore <span>features</span>", feat_desc: "Click on item.", 
+      feat_audit_wifi: "🛡 Wi-Fi Stress Testing (Resilience Audit)", feat_audit_wifi_warn: "⚠ Exclusively for testing your own networks and demo stands!", feat_audit_1: "<b>Beacon Spam:</b> generation of test beacons to check client device stability under high air congestion.", feat_audit_2: "<b>Deauth Flood:</b> simulated disconnection to test IP cameras and IoT devices against deauth attacks.", feat_audit_3: "<b>Evil Portal:</b> local demo page (Captive Portal) to study the risks of open networks.", 
+      feat_audit_bt: "🔵 Bluetooth & BLE Audit", feat_audit_bt_1: "<b>BLE Advertisement Test:</b> generation of test BLE packets to study pairing request handling in iOS and Windows.", feat_audit_bt_2: "<b>Detect Card Skimmer:</b> passive scanning for suspicious hidden Bluetooth modules.",
+      specs_title: "Specs & <span>Hardware</span>", spec_cpu: "CPU & Radio", spec_power: "Power", 
+      proc_title: "Creation <span>history</span>", gal_title: "Gallery", 
+      order_title: "Order DIY Assembly Kit", order_desc: "Want to build KA-01 yourself to study radio and microcontrollers? Leave a request for a parts kit or ask a project question.", 
+      form_name: "Your Name", form_contact: "Telegram or Email", form_format: "Format", form_format_1: "DIY Assembly Kit", form_format_2: "Project Consultation", form_comment: "Comment", form_email: "Send to Email", form_tg: "Send to Telegram", 
+      legal_title: "Safety & <span>Law</span>", faq_title: "Questions & <span>Answers</span>", about_title: "About", passport_title: "Passport", pass_author: "Author", pass_model: "Model", 
+      contacts_title: "Contact Me", contact_desc: "Questions about assembly, firmware, or the Olympiad? Write to me directly or subscribe to the dev channel!", contact_btn_personal: "Personal TG @mitproro", contact_btn_channel: "KA-01 Project Channel"
+    },
+    de: { 
+      nav_home: "Übersicht", nav_features: "Funktionen", nav_specs: "Spezifikationen", nav_process: "Erstellung", nav_gallery: "Galerie", nav_order: "Bestellen", nav_legal: "Sicherheit", nav_faq: "FAQ", nav_about: "Über uns", 
+      hero_badge: "Modell KA-01 • Erstes Gerät", hero_title_1: "Taschen-<span>Auditor</span>", 
+      hero_desc: "Stellen Sie sich ein Röntgengerät für WLAN vor. Für Bildungszwecke.", hero_btn: "Funktionen", hero_btn_order: "Bestellen", 
+      stat_1: "WLAN-Audit", stat_2: "Selbstkosten", stat_3: "Akkulaufzeit", stat_4: "Olympia", 
+      chart_title_1: "Geschwindigkeit & Reichweite", chart_1_k: "Reichweite:", chart_1_v: "bis 100-150m draußen, ~50m drinnen", chart_2_k: "Scan-Geschwindigkeit:", chart_2_v: "14 Kanäle in ~20 Sek", chart_3_k: "Genauigkeit:", chart_3_v: "MAC & RSSI in Echtzeit",
+      chart_title_2: "Ergonomie & Akku", chart_4_k: "Akkulaufzeit:", chart_4_v: "4-5 Std. aktives Scannen", chart_5_k: "Steuerung:", chart_5_v: "2.8\" resistiver Touchscreen (Stift)", chart_6_k: "Größe & Gewicht:", chart_6_v: "kompaktes ABS-Gehäuse (153 g)",
+      feat_title: "Funktionen", feat_desc: "Klicken Sie hier.", 
+      feat_audit_wifi: "🛡 WLAN-Stresstests (Resilienz-Audit)", feat_audit_wifi_warn: "⚠ Nur für eigene Netzwerke und Demo-Stände!", feat_audit_1: "<b>Beacon Spam:</b> Test-Beacons zur Stabilitätsprüfung.", feat_audit_2: "<b>Deauth Flood:</b> simulierte Trennung für IoT-Tests.", feat_audit_3: "<b>Evil Portal:</b> lokale Demo-Seite (Captive Portal).", 
+      feat_audit_bt: "🔵 Bluetooth & BLE Audit", feat_audit_bt_1: "<b>BLE Test:</b> Generierung von Testpaketen.", feat_audit_bt_2: "<b>Skimmer-Erkennung:</b> passives Scannen.",
+      specs_title: "Spezifikationen", spec_cpu: "CPU & Funk", spec_power: "Strom", 
+      proc_title: "Geschichte", gal_title: "Galerie", 
+      order_title: "DIY-Bausatz bestellen", order_desc: "Wollen Sie KA-01 selbst bauen? Fordern Sie einen Bausatz an oder stellen Sie eine Frage.", 
+      form_name: "Ihr Name", form_contact: "Telegram oder E-Mail", form_format: "Format", form_format_1: "DIY-Bausatz", form_format_2: "Projekt-Beratung", form_comment: "Kommentar", form_email: "An E-Mail senden", form_tg: "An Telegram senden", 
+      legal_title: "Sicherheit & <span>Recht</span>", faq_title: "Fragen & <span>Antworten</span>", about_title: "Über uns", passport_title: "Pass", pass_author: "Autor", pass_model: "Modell", 
+      contacts_title: "Kontakt", contact_desc: "Fragen zur Montage oder Firmware? Schreiben Sie mir oder abonnieren Sie den Kanal!", contact_btn_personal: "Persönliches TG @mitproro", contact_btn_channel: "KA-01 Projekt-Kanal"
+    },
+    fi: { 
+      nav_home: "Yleiskatsaus", nav_features: "Ominaisuudet", nav_specs: "Tekniset tiedot", nav_process: "Luominen", nav_gallery: "Galleria", nav_order: "Tilaa", nav_legal: "Turvallisuus", nav_faq: "FAQ", nav_about: "Tietoja", 
+      hero_badge: "Malli KA-01 • Ensimmäinen laite", hero_title_1: "Tasku-<span>audiitori</span>", 
+      hero_desc: "Kuvittele röntgenlaite Wi-Fi:lle. Koulutustarkoituksiin.", hero_btn: "Ominaisuudet", hero_btn_order: "Tilaa", 
+      stat_1: "Wi-Fi auditointi", stat_2: "Omakustannushinta", stat_3: "Akkukesto", stat_4: "Olympia", 
+      chart_title_1: "Nopeus & Kantama", chart_1_k: "Kantama:", chart_1_v: "jopa 100-150m ulkona, ~50m sisällä", chart_2_k: "Skannausnopeus:", chart_2_v: "14 kanavaa ~20 sekunnissa", chart_3_k: "Tarkkuus:", chart_3_v: "MAC & RSSI reaaliajassa",
+      chart_title_2: "Ergonomia & Akku", chart_4_k: "Akkukesto:", chart_4_v: "4-5 tuntia aktiivista skannausta", chart_5_k: "Ohjaus:", chart_5_v: "2.8\" resistiivinen kosketusnäyttö", chart_6_k: "Koko & Paino:", chart_6_v: "kompakti ABS-kotelo (153 g)",
+      feat_title: "Ominaisuudet", feat_desc: "Klikkaa kohdetta.", 
+      feat_audit_wifi: "🛡 Wi-Fi Stressitestaus (Auditointi)", feat_audit_wifi_warn: "⚠ Vain omiin verkkoihin ja demoihin!", feat_audit_1: "<b>Beacon Spam:</b> testi-majakoiden luonti.", feat_audit_2: "<b>Deauth Flood:</b> simuloi yhteyden katkeamista.", feat_audit_3: "<b>Evil Portal:</b> paikallinen demo-sivu.", 
+      feat_audit_bt: "🔵 Bluetooth & BLE Auditointi", feat_audit_bt_1: "<b>BLE Testi:</b> testipakettien luonti.", feat_audit_bt_2: "<b>Skimmerin tunnistus:</b> passiivinen skannaus.",
+      specs_title: "Tekniset tiedot", spec_cpu: "CPU & Radio", spec_power: "Virta", 
+      proc_title: "Historia", gal_title: "Galleria", 
+      order_title: "Tilaa DIY-rakennussarja", order_desc: "Haluatko rakentaa KA-01:n itse? Jätä pyyntö osasarjasta tai kysy projektista.", 
+      form_name: "Nimesi", form_contact: "Telegram tai sähköposti", form_format: "Muoto", form_format_1: "DIY-rakennussarja", form_format_2: "Projektin konsultointi", form_comment: "Kommentti", form_email: "Lähetä sähköpostiin", form_tg: "Lähetä Telegramiin", 
+      legal_title: "Turvallisuus & <span>Laki</span>", faq_title: "Kysymykset & <span>Vastaukset</span>", about_title: "Tietoja", passport_title: "Passi", pass_author: "Tekijä", pass_model: "Malli", 
+      contacts_title: "Ota yhteyttä", contact_desc: "Kysymyksiä kokoonpanosta tai laiteohjelmistosta? Kirjoita minulle tai tilaa kanava!", contact_btn_personal: "Henkilökohtainen TG @mitproro", contact_btn_channel: "KA-01 Projektikanava"
+    },
+    be: { 
+      nav_home: "Агляд", nav_features: "Функцыянал", nav_specs: "Характарыстыкі", nav_process: "Стварэнне", nav_gallery: "Галерэя", nav_order: "Заказаць", nav_legal: "Бяспека", nav_faq: "FAQ", nav_about: "Пра праект", 
+      hero_badge: "Мадэль KA-01 • Першая прылада", hero_title_1: "Кішэнны <span>аўдытар</span>", 
+      hero_desc: "Створаны для адукацыйных мэт.", hero_btn: "Функцыянал", hero_btn_order: "Заказаць", 
+      stat_1: "Аўдыт Wi-Fi", stat_2: "Сабекошт", stat_3: "Аўтаномнасць", stat_4: "Алімпіяда", 
+      chart_title_1: "Хуткасць і далёкасць", chart_1_k: "Далёкасць прыёму:", chart_1_v: "да 100-150 м на адкрытай мясцовасці, ~50 м у памяшканні", chart_2_k: "Хуткасць сканавання:", chart_2_v: "поўны праход па 14 каналах за ~20 сек", chart_3_k: "Дакладнасць:", chart_3_v: "фіксацыя MAC-адрасоў і RSSI",
+      chart_title_2: "Эрганоміка і аўтаномнасць", chart_4_k: "Час працы:", chart_4_v: "4-5 гадзін актыўнага сканавання", chart_5_k: "Кіраванне:", chart_5_v: "рэзістыўны сэнсарны экран 2.8\"", chart_6_k: "Памеры і вага:", chart_6_v: "кампактны корпус з ABS-пластыка (153 г)",
+      feat_title: "Функцыянал", feat_desc: "Націсніце на пункт.", 
+      feat_audit_wifi: "🛡 Стрэс-тэставанне Wi-Fi (Аўдыт устойлівасці)", feat_audit_wifi_warn: "⚠ Толькі для ўласных сетак і дэманстрацый!", feat_audit_1: "<b>Beacon Spam:</b> генерацыя тэставых маякоў.", feat_audit_2: "<b>Deauth Flood:</b> імітацыя разрыву злучэння.", feat_audit_3: "<b>Evil Portal:</b> лакальная дэманстрацыйная старонка.", 
+      feat_audit_bt: "🔵 Аўдыт Bluetooth і BLE", feat_audit_bt_1: "<b>BLE Test:</b> генерацыя тэставых пакетаў.", feat_audit_bt_2: "<b>Detect Skimmer:</b> пасіўнае сканаванне.",
+      specs_title: "Характарыстыкі", spec_cpu: "Працэсар", spec_power: "Сілкаванне", 
+      proc_title: "Гісторыя", gal_title: "Галерэя", 
+      order_title: "Заказаць DIY-камплект", order_desc: "Хочаце сабраць KA-01 самастойна? Пакіньце заяўку на камплект або задайце пытанне.", 
+      form_name: "Ваша імя", form_contact: "Telegram або Email", form_format: "Фармат", form_format_1: "DIY-набор", form_format_2: "Кансультацыя", form_comment: "Каментарый", form_email: "Адправіць на Email", form_tg: "Адправіць у Telegram", 
+      legal_title: "Бяспека і <span>Права</span>", faq_title: "Пытанні і <span>Адказы</span>", about_title: "Пра праект", passport_title: "Пашпарт", pass_author: "Аўтар", pass_model: "Мадэль", 
+      contacts_title: "Звязацца са мной", contact_desc: "Пытанні па зборцы ці прашыўцы? Напішыце мне або падпішыцеся на канал!", contact_btn_personal: "Асабісты TG @mitproro", contact_btn_channel: "Канал KA-01 Project"
+    }
   };
 
   const legalData = {
@@ -764,20 +840,20 @@
   }
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-  // ================= ФОРМА (Email и Telegram БЕЗ API) =================
+  // ================= ФОРМА (ОБНОВЛЕНА) =================
   function generateOrderText() {
     const name = document.getElementById('orderName').value;
     const contact = document.getElementById('orderContact').value;
-    const qty = document.getElementById('orderQty').value;
+    const format = document.getElementById('orderFormat').value;
     const comment = document.getElementById('orderComment').value;
-    return { name, contact, qty, comment, text: `Новый заказ KA-01!\n\nИмя: ${name}\nКонтакты: ${contact}\nКоличество: ${qty}\nКомментарий: ${comment}` };
+    return { name, contact, format, comment, text: `Новый заказ KA-01!\n\nИмя: ${name}\nКонтакты: ${contact}\nФормат: ${format}\nКомментарий: ${comment}` };
   }
 
   function sendOrderEmail() {
     const data = generateOrderText();
     if(!data.name || !data.contact) { alert("Заполните имя и контакты!"); return; }
     const subject = encodeURIComponent("Заказ устройства KA-01");
-    const body = encodeURIComponent(`Здравствуйте, Артемий!\n\nЯ хочу заказать устройство KA-01.\n\nИмя: ${data.name}\nКонтакты: ${data.contact}\nКоличество: ${data.qty}\nКомментарий: ${data.comment}`);
+    const body = encodeURIComponent(`Здравствуйте, Артемий!\n\nЯ хочу оформить заявку на KA-01.\n\nИмя: ${data.name}\nКонтакты: ${data.contact}\nФормат: ${data.format}\nКомментарий: ${data.comment}`);
     window.location.href = `mailto:mitproro12@mail.ru?subject=${subject}&body=${body}`;
   }
 
@@ -785,7 +861,7 @@
     const data = generateOrderText();
     if(!data.name || !data.contact) { alert("Заполните имя и контакты!"); return; }
     navigator.clipboard.writeText(data.text).then(() => {
-      alert('Текст заказа скопирован в буфер обмена! Сейчас откроется чат Telegram. Просто вставьте текст туда.');
+      alert('Текст заявки скопирован в буфер обмена! Сейчас откроется чат Telegram. Просто вставьте текст туда.');
       window.open('https://t.me/mitproro', '_blank');
     }).catch(err => {
       alert('Не удалось скопировать текст. Пожалуйста, скопируйте вручную или используйте Email.');
