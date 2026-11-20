@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KA-01 — Портативный анализатор беспроводных сетей</title>
-<meta name="description" content="Автономное устройство для пассивного сканирования и диагностики радиоэфира 2,4 ГГц (Wi-Fi и Bluetooth LE). Собственный корпус, FDM-печать, ESP32.">
-<meta property="og:title" content="KA-01 — Портативный анализатор беспроводных сетей">
-<meta property="og:description" content="Пассивный сканер Wi-Fi и Bluetooth LE. Собственный 3D-корпус, ESP32, автономное питание.">
-<meta property="og:type" content="website">
+<meta name="description" content="Автономное устройство KA-01 для пассивного сканирования и диагностики радиоэфира 2,4 ГГц (Wi-Fi и Bluetooth LE). Собственный корпус, FDM-печать, ESP32.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23080b10'/><circle cx='50' cy='50' r='18' fill='%2300e5ff'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,12 +23,9 @@
     --accent:#00e5ff;
     --accent-2:#00ffa3;
     --warn:#ffb020;
-    --danger:#ff5470;
     --radius:18px;
-    --radius-sm:12px;
     --mono:'JetBrains Mono',ui-monospace,monospace;
     --sans:'Manrope',system-ui,-apple-system,sans-serif;
-    --shadow-lg:0 30px 60px -20px rgba(0,0,0,.6);
   }
 
   *{margin:0;padding:0;box-sizing:border-box}
@@ -92,14 +86,6 @@
     content:'';position:absolute;left:14px;right:14px;bottom:4px;height:2px;
     background:var(--accent);border-radius:2px;
   }
-  .nav-cta{
-padding:9px 18px !important;border-radius:10px;
-    background:linear-gradient(135deg,var(--accent),#00a8c5);
-    color:#001018 !important;font-weight:800;
-    box-shadow:0 4px 16px rgba(0,229,255,.25);
-  }
-  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,229,255,.4)}
-  .nav-cta::before{display:none !important}
 
   .burger{
     display:none;width:40px;height:40px;border-radius:10px;
@@ -198,17 +184,11 @@ padding:9px 18px !important;border-radius:10px;
     white-space:nowrap;
   }
   .btn-primary{
-background:linear-gradient(135deg,var(--accent),#00a8c5);
+    background:linear-gradient(135deg,var(--accent),#00a8c5);
     color:#001018;
     box-shadow:0 10px 30px -8px rgba(0,229,255,.5);
     position:relative;overflow:hidden;
   }
-  .btn-primary::before{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.4) 50%,transparent 70%);
-    transform:translateX(-100%);transition:transform .6s;
-  }
-  .btn-primary:hover::before{transform:translateX(100%)}
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px rgba(0,229,255,.6)}
   .btn-ghost{
     background:transparent;color:var(--text);
@@ -247,23 +227,9 @@ background:linear-gradient(135deg,var(--accent),#00a8c5);
     padding:20px;
     position:relative;
     transform:rotateY(-16deg) rotateX(8deg);
-    box-shadow:
-      -40px 60px 100px -20px rgba(0,0,0,.85),
-      -10px 10px 30px rgba(0,0,0,.6),
-      inset 0 1px 0 rgba(255,255,255,.07),
-      inset 0 -2px 6px rgba(0,0,0,.9),
-      inset 0 0 60px rgba(0,0,0,.4);
+    box-shadow:-40px 60px 100px -20px rgba(0,0,0,.85), -10px 10px 30px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.07), inset 0 -2px 6px rgba(0,0,0,.9);
     animation:float 7s ease-in-out infinite;
     border:1px solid #2a2a32;
-  }
-  .device::before{
-    content:'';position:absolute;top:9px;left:24px;right:24px;height:3px;
-    background:repeating-linear-gradient(90deg,#2a2a32 0 3px,transparent 3px 8px);
-    border-radius:2px;opacity:.55;
-  }
-  .device::after{
-    content:'';position:absolute;inset:0;border-radius:20px;pointer-events:none;
-    background:linear-gradient(160deg,rgba(255,255,255,.06),transparent 30%,transparent 70%,rgba(0,0,0,.3));
   }
   @keyframes float{
     0%,100%{transform:rotateY(-16deg) rotateX(8deg) translateY(0)}
@@ -278,10 +244,7 @@ background:linear-gradient(135deg,var(--accent),#00a8c5);
     position:relative;
     font-family:var(--mono);
     color:#cfe4ff;
-    box-shadow:
-      inset 0 0 30px rgba(0,229,255,.1),
-      inset 0 0 2px rgba(0,229,255,.4),
-      0 0 20px rgba(0,229,255,.08);
+    box-shadow:inset 0 0 30px rgba(0,229,255,.1);
   }
   .screen-bar{
     display:flex;justify-content:space-between;
@@ -302,14 +265,12 @@ background:linear-gradient(135deg,var(--accent),#00a8c5);
     padding:6px 12px;font-size:10.5px;color:#9fc4e0;
     display:flex;align-items:center;gap:10px;
     border-bottom:1px solid rgba(255,255,255,.04);
-    transition:background .2s;
   }
   .screen-item.active{
     background:rgba(0,229,255,.16);color:#fff;
     border-left:2px solid var(--accent);
     padding-left:10px;
   }
-.screen-item .ico{font-size:11px;width:14px;text-align:center}
   .screen-scan{
     position:absolute;left:0;right:0;height:1px;
     background:linear-gradient(90deg,transparent,var(--accent),transparent);
@@ -322,16 +283,13 @@ background:linear-gradient(135deg,var(--accent),#00a8c5);
     margin-top:14px;text-align:center;
     font-family:var(--mono);font-size:12px;letter-spacing:4px;
     color:#3a3a46;font-weight:700;
-    text-shadow:0 1px 0 rgba(255,255,255,.05);
   }
   .device-side{
-    position:absolute;right:-9px;top:55px;
-    width:9px;height:220px;
+    position:absolute;right:-9px;top:55px;width:9px;height:220px;
     background:linear-gradient(90deg,#1c1c22,#08080b);
     border-radius:0 8px 8px 0;
     display:flex;flex-direction:column;justify-content:space-around;
     padding:12px 0;align-items:center;
-    box-shadow:2px 0 6px rgba(0,0,0,.5);
   }
   .device-side span{
     writing-mode:vertical-rl;font-size:6.5px;color:#5a5a66;
@@ -341,12 +299,6 @@ background:linear-gradient(135deg,var(--accent),#00a8c5);
     position:absolute;left:-7px;top:30px;width:7px;height:280px;
     background:linear-gradient(90deg,#08080b,#2e2e38,#08080b);
     border-radius:4px 0 0 4px;
-    box-shadow:-2px 0 8px rgba(0,0,0,.6);
-  }
-  .device-ant::after{
-    content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%);
-    width:12px;height:6px;border-radius:3px;
-    background:linear-gradient(180deg,#3a3a46,#1c1c22);
   }
 
   @media(max-width:960px){
@@ -391,7 +343,7 @@ background:linear-gradient(135deg,var(--accent),#00a8c5);
     overflow:hidden;
     background:var(--surface);
     border:1px solid var(--border);
-    transition:transform .4s cubic-bezier(.2,.9,.3,1), border-color .3s, box-shadow .4s;
+    transition:transform .4s cubic-bezier(.2,.9,.3,1), border-color .3s;
     cursor:pointer;
   }
   .gallery-item:hover{
@@ -411,231 +363,159 @@ background:linear-gradient(135deg,var(--accent),#00a8c5);
     padding:20px 18px 14px;
     background:linear-gradient(to top,rgba(0,0,0,.85),transparent);
     font-size:13px;font-weight:600;color:#fff;
-    letter-spacing:.2px;
-    transform:translateY(0);transition:transform .3s;
   }
   
-  /* Специальная сетка для 9 фото */
   .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
   .gallery-item:nth-child(4) { grid-column: span 2; }
   .gallery-item:nth-child(6) { grid-row: span 2; }
 
   @media(max-width:900px){
-    .gallery{
-      grid-template-columns:repeat(2, 1fr);
-      grid-auto-rows:200px;
-    }
-.gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 1; }
+    .gallery{grid-template-columns:repeat(2, 1fr);grid-auto-rows:200px;}
+    .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 1; }
     .gallery-item:nth-child(4) { grid-column: span 1; }
     .gallery-item:nth-child(6) { grid-row: span 1; }
   }
   @media(max-width:520px){
-    .gallery{
-      grid-template-columns:1fr;
-      grid-auto-rows:240px;
-    }
+    .gallery{grid-template-columns:1fr;grid-auto-rows:240px;}
     .gallery-item:nth-child(n) { grid-column: span 1; grid-row: span 1; }
   }
 
   /* ============ FEATURES ============ */
-  .features-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
-    gap:20px;
-  }
+  .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px;}
   .feature{
     background:linear-gradient(180deg,var(--surface),var(--bg-2));
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:30px;
-    transition:transform .3s, border-color .3s, box-shadow .3s;
+    transition:transform .3s, border-color .3s;
     position:relative;overflow:hidden;
   }
-  .feature::before{
-    content:'';position:absolute;top:0;left:0;right:0;height:2px;
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
-    transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.2,.9,.3,1);
-  }
-  .feature:hover{transform:translateY(-5px);border-color:rgba(0,229,255,.3);box-shadow:0 24px 50px -20px rgba(0,0,0,.6)}
-  .feature:hover::before{transform:scaleX(1)}
+  .feature:hover{transform:translateY(-5px);border-color:rgba(0,229,255,.3);}
   .feature-icon{
     width:52px;height:52px;border-radius:14px;
     background:linear-gradient(135deg,rgba(0,229,255,.1),rgba(0,255,163,.05));
     display:flex;align-items:center;justify-content:center;
-    margin-bottom:20px;
-    border:1px solid rgba(0,229,255,.15);
+    margin-bottom:20px;border:1px solid rgba(0,229,255,.15);
   }
-  .feature-icon svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-  .feature h3{font-size:18px;font-weight:700;margin-bottom:10px;letter-spacing:-.2px}
-  .feature p{color:var(--muted);font-size:14.5px;line-height:1.6}
+  .feature-icon svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.9;}
+  .feature h3{font-size:18px;font-weight:700;margin-bottom:10px;}
+  .feature p{color:var(--muted);font-size:14.5px;}
 
-  /* ============ SPECS ============ */
-  #specs{background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-  .specs-wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
-  @media(max-width:900px){.specs-wrap{grid-template-columns:1fr}}
-  .specs-table{width:100%;border-collapse:collapse}
-  .specs-table tr{border-bottom:1px solid var(--border);transition:background .2s}
-  .specs-table tr:hover{background:rgba(0,229,255,.02)}
-  .specs-table tr:last-child{border-bottom:none}
-  .specs-table td{padding:16px 12px;vertical-align:top;font-size:15px}
-  .specs-table td:first-child{color:var(--muted);font-weight:500;width:46%}
-  .specs-table td:last-child{font-weight:600;text-align:right}
-  .specs-table td code{
-    font-family:var(--mono);font-size:13px;color:var(--accent);
-    background:rgba(0,229,255,.07);padding:3px 9px;border-radius:6px;
-    border:1px solid rgba(0,229,255,.12);
-  }
-  .spec-card{
-    background:linear-gradient(180deg,var(--surface),var(--bg-2));
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:32px;
-  }
-  .spec-card + .spec-card{margin-top:20px}
-  .spec-card h3{
-    font-size:16px;font-weight:700;margin-bottom:20px;
-    display:flex;align-items:center;gap:10px;letter-spacing:-.2px;
-  }
-  .spec-card h3::before{content:'';width:4px;height:18px;background:linear-gradient(180deg,var(--accent),var(--accent-2));border-radius:2px}
-  .spec-card ul{list-style:none}
-  .spec-card li{
-    padding:11px 0;color:var(--muted);font-size:14.5px;
-    border-bottom:1px dashed rgba(28,40,55,.8);
-    display:flex;justify-content:space-between;gap:16px;
-  }
-  .spec-card li:last-child{border:none}
-  .spec-card li span{color:var(--text);font-weight:600;font-family:var(--mono);font-size:13px;white-space:nowrap}
-
-  /* ============ PROCESS ============ */
+  /* ============ PROCESS (INTERACTIVE) ============ */
   .process{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;position:relative}
-  .process::before{
-    content:'';position:absolute;top:60px;left:5%;right:5%;height:1px;
-    background:linear-gradient(90deg,transparent,var(--border-2),transparent);
-    z-index:0;
-  }
-@media(max-width:1000px){.process{grid-template-columns:repeat(2,1fr)}.process::before{display:none}}
+  @media(max-width:1000px){.process{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:520px){.process{grid-template-columns:1fr}}
+  
   .step{
     background:linear-gradient(180deg,var(--surface),var(--bg-2));
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:26px 22px;
     position:relative;z-index:1;
-    transition:border-color .3s, transform .3s;
+    cursor:pointer;
+    transition:border-color .3s, transform .3s, background .3s;
   }
-  .step:hover{border-color:rgba(0,255,163,.35);transform:translateY(-4px)}
+  .step:hover{border-color:rgba(0,255,163,.5);transform:translateY(-4px);background:var(--surface-2);}
+  .step::after {
+    content: 'Нажми для деталей';
+    display: block;
+    margin-top: 15px;
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .step:hover::after { opacity: 1; }
+  
   .step-num{
     font-family:var(--mono);font-size:38px;font-weight:800;
     line-height:1;margin-bottom:16px;
     background:linear-gradient(135deg,rgba(0,229,255,.35),rgba(0,255,163,.15));
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   }
-  .step h3{font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-.1px}
-  .step p{font-size:13px;color:var(--muted);line-height:1.55}
+  .step h3{font-size:15px;font-weight:700;margin-bottom:8px;}
 
-  /* ============ APPS ============ */
-  #apps{background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-  .apps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
-  .app-card{
-    padding:28px;border-radius:var(--radius);
-    background:linear-gradient(135deg,rgba(0,229,255,.06),rgba(0,255,163,.02));
-    border:1px solid var(--border);
-    transition:border-color .3s, transform .3s;
+  /* ============ MODAL ============ */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+    z-index: 1000; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
   }
-  .app-card:hover{border-color:rgba(0,229,255,.35);transform:translateY(-4px)}
-  .app-card h3{
-    font-size:16px;font-weight:700;margin-bottom:10px;
-    display:flex;align-items:center;gap:12px;letter-spacing:-.2px;
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-content {
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius);
+    padding: 40px; max-width: 600px; width: 90%;
+    position: relative; transform: translateY(20px);
+    transition: transform 0.3s;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
   }
-  .app-card h3 .num{
-    font-family:var(--mono);font-size:11px;color:var(--accent);
-    background:rgba(0,229,255,.1);padding:3px 8px;border-radius:6px;
-    border:1px solid rgba(0,229,255,.2);
+  .modal-overlay.active .modal-content { transform: translateY(0); }
+  .modal-close {
+    position: absolute; top: 15px; right: 20px;
+    background: none; border: none; color: var(--muted);
+    font-size: 28px; cursor: pointer; transition: color 0.2s;
   }
-  .app-card p{font-size:14px;color:var(--muted)}
+  .modal-close:hover { color: var(--text); }
+  .modal-content h3 { font-size: 24px; color: var(--accent); margin-bottom: 15px; }
+  .modal-content p { color: var(--muted); font-size: 16px; line-height: 1.7; margin-bottom: 10px; }
 
-  /* ============ ABOUT ============ */
-  .about-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:40px}
+  /* ============ ABOUT & CONTACTS ============ */
+  .about-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px}
   @media(max-width:900px){.about-grid{grid-template-columns:1fr}}
-  .about-text p{color:var(--muted);margin-bottom:16px;font-size:15.5px;line-height:1.7}
-  .about-text p:last-child{margin-bottom:0}
+  .about-text p{color:var(--muted);margin-bottom:16px;font-size:15.5px;}
   .about-text strong{color:var(--text);font-weight:700}
+  
   .info-card{
     background:linear-gradient(180deg,var(--surface),var(--bg-2));
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:28px;
-    position:sticky;top:90px;
   }
-  .info-card h3{font-size:14px;font-weight:700;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--mono)}
-  .info-row{
-    display:flex;justify-content:space-between;gap:16px;
-    padding:13px 0;border-bottom:1px solid var(--border);font-size:14px;
+  .info-card h3{font-size:16px;font-weight:700;margin-bottom:20px;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:10px;}
+  
+  /* QR & CONTACTS BOX */
+  .qr-box {
+    margin-top: 30px; padding: 25px; text-align: center;
+    background: rgba(0,229,255,0.03); border: 1px dashed var(--accent);
+    border-radius: var(--radius);
   }
-  .info-row:last-child{border:none}
-  .info-row .k{color:var(--muted)}
-  .info-row .v{font-weight:600;text-align:right}
+  .qr-box img { width: 150px; height: 150px; margin: 0 auto 15px auto; border-radius: 8px; }
+  .qr-box p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .qr-box .link { font-family: var(--mono); font-size: 13px; color: var(--accent); word-break: break-all; margin-bottom: 15px; display: block; }
+  
+  .contact-list { list-style: none; margin-top: 20px; }
+  .contact-list li { margin-bottom: 12px; font-size: 14.5px; }
+  .contact-list span { color: var(--muted); display: inline-block; width: 80px; }
+  .contact-list a { color: var(--text); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+  .contact-list a:hover { color: var(--accent); }
 
   /* ============ LEGAL ============ */
   .legal{
-    margin:0 6vw 110px;
-    padding:32px 36px;
-    border-radius:var(--radius);
+    margin:0 6vw 110px; padding:32px 36px; border-radius:var(--radius);
     background:linear-gradient(135deg,rgba(255,176,32,.07),rgba(255,176,32,.015));
-    border:1px solid rgba(255,176,32,.25);
-    display:flex;gap:22px;align-items:flex-start;
-    position:relative;overflow:hidden;
+    border:1px solid rgba(255,176,32,.25); display:flex; gap:22px;
   }
-  .legal::before{
-    content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
-    background:var(--warn);
-  }
-  .legal-icon{
-    flex-shrink:0;width:44px;height:44px;border-radius:12px;
-    background:rgba(255,176,32,.12);display:flex;align-items:center;justify-content:center;
-    font-size:22px;border:1px solid rgba(255,176,32,.2);
-  }
-  .legal h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--warn);letter-spacing:-.2px}
-  .legal p{font-size:14px;color:var(--muted);line-height:1.7}
-  @media(max-width:600px){.legal{flex-direction:column;padding:24px}}
+  .legal-icon{font-size:24px;}
+  .legal h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--warn);}
+  .legal p{font-size:14px;color:var(--muted);line-height:1.7;}
 
   /* ============ FOOTER ============ */
   footer{
     padding:44px 6vw;border-top:1px solid var(--border);
     display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
-color:var(--muted);font-size:13.5px;
+    color:var(--muted);font-size:13.5px;
   }
   footer .logo{color:var(--text);font-size:17px}
-  footer .foot-mid{opacity:.8;font-size:13px}
-
-  /* ============ BACK TO TOP ============ */
-  .to-top{
-    position:fixed;right:24px;bottom:24px;z-index:50;
-    width:46px;height:46px;border-radius:12px;
-    background:var(--surface-2);border:1px solid var(--border-2);
-    color:var(--text);cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
-    opacity:0;pointer-events:none;transform:translateY(12px);
-    transition:opacity .3s, transform .3s, border-color .2s, background .2s;
-    box-shadow:0 10px 30px rgba(0,0,0,.4);
-  }
-  .to-top.show{opacity:1;pointer-events:auto;transform:none}
-  .to-top:hover{border-color:var(--accent);background:rgba(0,229,255,.1);color:var(--accent)}
-  .to-top svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 
   /* ============ REVEAL ============ */
-  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.9,.3,1),transform .8s cubic-bezier(.2,.9,.3,1)}
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
   .reveal.visible{opacity:1;transform:none}
   .reveal.delay-1{transition-delay:.08s}
   .reveal.delay-2{transition-delay:.16s}
   .reveal.delay-3{transition-delay:.24s}
-  .reveal.delay-4{transition-delay:.32s}
-  .reveal.delay-5{transition-delay:.4s}
-
-  @media(prefers-reduced-motion:reduce){
-    *{animation:none !important;transition:none !important}
-    .reveal{opacity:1;transform:none}
-  }
 </style>
 </head>
 <body>
@@ -647,10 +527,8 @@ color:var(--muted);font-size:13.5px;
   <a href="#" class="logo"><div class="logo-dot"></div> KA-01</a>
   <ul class="nav-links" id="navLinks">
     <li><a href="#gallery" data-link>Галерея</a></li>
-    <li><a href="#features" data-link>Возможности</a></li>
-    <li><a href="#specs" data-link>Характеристики</a></li>
-    <li><a href="#process" data-link>Процесс</a></li>
-    <li><a href="#apps" data-link>Применение</a></li>
+    <li><a href="#features" data-link>Функции</a></li>
+    <li><a href="#process" data-link>Как сделано</a></li>
     <li><a href="#about" data-link>О проекте</a></li>
   </ul>
   <button class="burger" id="burger" aria-label="Меню">
@@ -661,31 +539,28 @@ color:var(--muted);font-size:13.5px;
 <!-- HERO -->
 <header class="hero">
   <div>
-    <div class="badge"><span class="live"></span> Проект ВсОШ 2026/2027 · «Технологии прошлого — традиции будущего»</div>
-    <h1>Карманный <span class="grad">анализатор</span><br>беспроводных сетей</h1>
+    <div class="badge"><span class="live"></span> Инновационный проект · Модель KA-01</div>
+    <h1>Карманный <span class="grad">анализатор</span><br>сетей KA-01</h1>
     <p class="lead">
-      Автономное устройство для пассивного сканирования и диагностики радиоэфира
+      <strong>KA-01</strong> — это автономное устройство для пассивного сканирования и диагностики радиоэфира
       диапазона 2,4 ГГц (Wi-Fi 802.11 b/g/n и Bluetooth LE). Собственный разборный
       корпус, FDM-печать и сборка на ESP32.
     </p>
     <div class="hero-actions">
-      <a href="#specs" class="btn btn-primary">
-        Характеристики
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
-      <a href="#gallery" class="btn btn-ghost">Смотреть фото</a>
+      <a href="#gallery" class="btn btn-primary">Смотреть фото</a>
+      <a href="#process" class="btn btn-ghost">Как создавался KA-01</a>
     </div>
     <div class="hero-stats">
       <div>
-        <div class="stat-num" data-target="2.4" data-decimals="1" data-suffix=" ГГц">0</div>
+        <div class="stat-num">2.4 <small>ГГц</small></div>
         <div class="stat-label">Wi-Fi + BLE</div>
       </div>
       <div>
-        <div class="stat-num" data-target="5" data-suffix=" ч">0</div>
+        <div class="stat-num">5 <small>ч</small></div>
         <div class="stat-label">автономной работы</div>
       </div>
       <div>
-        <div class="stat-num" data-target="153" data-suffix=" г">0</div>
+        <div class="stat-num">153 <small>г</small></div>
         <div class="stat-label">масса в сборе</div>
       </div>
     </div>
@@ -699,12 +574,12 @@ color:var(--muted);font-size:13.5px;
       </div>
       <div class="screen">
         <div class="screen-bar"><span>CH: 01</span><span>93%</span></div>
-        <div class="screen-title">ESP32 Marauder</div>
-        <div class="screen-item active"><span class="ico">📡</span> Scan</div>
-<div class="screen-item"><span class="ico">📶</span> WiFi</div>
-        <div class="screen-item"><span class="ico">🔵</span> Bluetooth</div>
-        <div class="screen-item"><span class="ico">📱</span> Device</div>
-        <div class="screen-item"><span class="ico">↻</span> Reboot</div>
+        <div class="screen-title">KA-01 Scanner</div>
+        <div class="screen-item active"><span>📡</span> Scan</div>
+        <div class="screen-item"><span>📶</span> WiFi</div>
+        <div class="screen-item"><span>🔵</span> Bluetooth</div>
+        <div class="screen-item"><span>📱</span> Device</div>
+        <div class="screen-item"><span>↻</span> Reboot</div>
         <div class="screen-scan"></div>
       </div>
       <div class="device-brand">MODEL: KA-01</div>
@@ -715,64 +590,47 @@ color:var(--muted);font-size:13.5px;
 <!-- GALLERY -->
 <section id="gallery" class="container">
   <div class="section-head reveal">
-    <span class="section-tag">// Фотогалерея</span>
+    <span class="section-tag">// Фотогалерея KA-01</span>
     <h2 class="section-title">Устройство и процесс</h2>
-    <p class="section-sub">Готовый прибор, внутренняя компоновка, интерфейс и рабочие режимы</p>
+    <p class="section-sub">Готовый прибор KA-01, внутренняя компоновка, интерфейс и рабочие режимы</p>
   </div>
 
   <div class="gallery">
-    <!-- 1: Главное фото -->
     <figure class="gallery-item reveal">
       <img src="photo-1.jpg" alt="Готовое устройство KA-01" loading="lazy" onerror="this.style.display='none'">
       <figcaption>Готовое устройство KA-01 (в корпусе)</figcaption>
     </figure>
-
-    <!-- 2: Плата -->
     <figure class="gallery-item reveal delay-1">
       <img src="photo-2.jpg" alt="Плата и антенна" loading="lazy" onerror="this.style.display='none'">
       <figcaption>Макетная плата, дисплей и антенна</figcaption>
     </figure>
-
-    <!-- 3: Питание -->
     <figure class="gallery-item reveal delay-2">
       <img src="photo-3.jpg" alt="Аккумулятор и модули" loading="lazy" onerror="this.style.display='none'">
       <figcaption>Li-Po аккумулятор и модули питания</figcaption>
     </figure>
-
-    <!-- 4: Live Activity -->
     <figure class="gallery-item reveal delay-3">
       <img src="photo-4.jpg" alt="Режим сканирования" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Режим Live Activity (сканирование эфира)</figcaption>
+      <figcaption>KA-01: Режим Live Activity</figcaption>
     </figure>
-
-    <!-- 5: В корпусе -->
     <figure class="gallery-item reveal delay-4">
       <img src="photo-5.jpg" alt="Работа в корпусе" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Устройство в корпусе во время работы</figcaption>
+      <figcaption>Устройство KA-01 в работе</figcaption>
     </figure>
-
-    <!-- 6: Settings -->
     <figure class="gallery-item reveal delay-5">
       <img src="photo-6.jpg" alt="Меню настроек" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Меню настроек (Settings)</figcaption>
+      <figcaption>Меню настроек KA-01</figcaption>
     </figure>
-
-    <!-- 7: Device Menu -->
     <figure class="gallery-item reveal">
       <img src="photo-7.jpg" alt="Меню устройства" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Меню управления (Device Info)</figcaption>
+      <figcaption>Меню управления KA-01</figcaption>
     </figure>
-
-    <!-- 8: BT Attacks -->
     <figure class="gallery-item reveal delay-1">
       <img src="photo-8.jpg" alt="Bluetooth атаки" loading="lazy" onerror="this.style.display='none'">
       <figcaption>Демонстрация BLE-режимов</figcaption>
     </figure>
-
-    <!-- 9: BT Sniffers -->
     <figure class="gallery-item reveal delay-2">
       <img src="photo-9.jpg" alt="Bluetooth снифферы" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Bluetooth снифферы и сканеры</figcaption>
+      <figcaption>Снифферы и сканеры KA-01</figcaption>
     </figure>
   </div>
 </section>
@@ -780,8 +638,8 @@ color:var(--muted);font-size:13.5px;
 <!-- FEATURES -->
 <section id="features" class="container">
   <div class="section-head reveal">
-    <span class="section-tag">// Функционал</span>
-    <h2 class="section-title">Что умеет устройство</h2>
+    <span class="section-tag">// Функционал KA-01</span>
+    <h2 class="section-title">Что умеет KA-01</h2>
     <p class="section-sub">Пассивная диагностика радиоэфира — без вмешательства в чужие сети</p>
   </div>
   <div class="features-grid">
@@ -792,111 +650,56 @@ color:var(--muted);font-size:13.5px;
     </div>
     <div class="feature reveal delay-1">
       <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 5 5-9"/></svg></div>
-<h3>График каналов 1–13</h3>
-      <p>Визуальная диаграмма загруженности эфира в реальном времени. Помогает выбрать свободный канал за секунды.</p>
+      <h3>График каналов 1–13</h3>
+      <p>Визуальная диаграмма загруженности эфира в реальном времени. Помогает выбрать свободный канал.</p>
     </div>
     <div class="feature reveal delay-2">
       <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>
       <h3>Bluetooth LE</h3>
-      <p>Обнаружение BLE-устройств, трекеров и маячков. Оценка плотности беспроводных устройств в помещении.</p>
+      <p>Обнаружение BLE-устройств, трекеров и маячков. Оценка плотности беспроводных устройств.</p>
     </div>
     <div class="feature reveal delay-3">
       <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
       <h3>Внешняя антенна</h3>
       <p>Всенаправленная антенна 2,4 ГГц через пигтейл U.FL → SMA. Повышенная дальность приёма.</p>
     </div>
-    <div class="feature reveal delay-4">
-      <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
-      <h3>Цветной сенсорный экран</h3>
-      <p>TFT-дисплей 2,8" (240×320) с резистивным сенсором. Управление стилусом, понятный интерфейс.</p>
-    </div>
-    <div class="feature reveal delay-5">
-      <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="1" y="6" width="18" height="12" rx="2"/><path d="M23 13v-2"/></svg></div>
-      <h3>Автономное питание</h3>
-      <p>Li-Po 1100 мА·ч с платой защиты и зарядкой TP4056. До 4–5 часов непрерывного сканирования.</p>
-    </div>
   </div>
 </section>
 
-<!-- SPECS -->
-<section id="specs" class="container">
+<!-- PROCESS (INTERACTIVE) -->
+<section id="process" class="container" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
   <div class="section-head reveal">
-    <span class="section-tag">// Спецификация</span>
-    <h2 class="section-title">Технические характеристики</h2>
-    <p class="section-sub">Модель KA-01 — авторская разборная конструкция</p>
-  </div>
-  <div class="specs-wrap">
-    <div class="reveal">
-      <table class="specs-table">
-        <tr><td>Микроконтроллер</td><td><code>ESP32-WROOM-32U</code></td></tr>
-        <tr><td>Ядра / частота</td><td>2 × Xtensa LX6, до 240 МГц</td></tr>
-        <tr><td>Радиоинтерфейсы</td><td>Wi-Fi 802.11 b/g/n, Bluetooth 4.2 + BLE</td></tr>
-        <tr><td>Антенна</td><td>Внешняя 2,4 ГГц, U.FL → SMA</td></tr>
-        <tr><td>Дисплей</td><td>2,8" TFT SPI 240×320, ILI9341</td></tr>
-        <tr><td>Тач-контроллер</td><td>XPT2046 (резистивный)</td></tr>
-        <tr><td>Питание</td><td>Li-Po 3,7 В / 1100 мА·ч</td></tr>
-        <tr><td>Зарядка</td><td>TP4056 + защита АКБ</td></tr>
-        <tr><td>Преобразователь</td><td>DC-DC Step-Up 5 В (до 3 А)</td></tr>
-        <tr><td>Габариты</td><td>102 × 80 × 26 мм</td></tr>
-        <tr><td>Масса корпуса</td><td>52 г (ABS)</td></tr>
-        <tr><td>Масса в сборе</td><td>153 г</td></tr>
-        <tr><td>Себестоимость</td><td><code>≈ 2 550 ₽</code></td></tr>
-      </table>
-    </div>
-    <div>
-      <div class="spec-card reveal delay-1">
-        <h3>Корпус</h3>
-        <ul>
-          <li>Материал <span>ABS-пластик</span></li>
-          <li>Технология <span>FDM 3D-печать</span></li>
-          <li>Слайсер <span>Polygon X</span></li>
-          <li>Принтер <span>PICASO Designer</span></li>
-          <li>Конструкция <span>Разборная, 2 детали</span></li>
-          <li>Цвет <span>Чёрный матовый</span></li>
-        </ul>
-      </div>
-      <div class="spec-card reveal delay-2">
-        <h3>Программная часть</h3>
-        <ul>
-          <li>Прошивка <span>ESP32 Marauder</span></li>
-          <li>Режим работы <span>Пассивный</span></li>
-          <li>3D-модель <span>SketchUp</span></li>
-          <li>Интерфейс <span>Сенсорный</span></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PROCESS -->
-<section id="process" class="container">
-  <div class="section-head reveal">
-    <span class="section-tag">// Производство</span>
+    <span class="section-tag">// Производство KA-01</span>
     <h2 class="section-title">Как сделано устройство</h2>
-    <p class="section-sub">Полный цикл: от эскиза до готового прибора</p>
+    <p class="section-sub">Нажми на любой этап, чтобы узнать подробности процесса</p>
   </div>
+  
   <div class="process">
-    <div class="step reveal">
-<div class="step-num">01</div>
+    <div class="step reveal" onclick="openModal('Проектирование', 'Разработка концепции велась с использованием методов ТРИЗ. Был проведен анализ существующих аналогов (от радиопеленгаторов до Flipper Zero). В качестве основной платформы выбран микроконтроллер ESP32-WROOM-32U с внешней антенной, обеспечивающий оптимальный баланс цены и производительности для задач пассивного сканирования.')">
+      <div class="step-num">01</div>
       <h3>Проектирование</h3>
       <p>Концепция методами ТРИЗ, анализ аналогов, подбор компонентов.</p>
     </div>
-    <div class="step reveal delay-1">
+    
+    <div class="step reveal delay-1" onclick="openModal('3D-модель', 'Корпус KA-01 был спроектирован в САПР SketchUp. Модель создавалась под точные габариты платы ESP32, дисплея 2.8 дюйма и Li-Po аккумулятора. Предусмотрен защитный бортик для экрана, вынесенная антенна и рельефная маркировка портов. Корпус состоит из двух разборных частей для удобства сборки и ремонта.')">
       <div class="step-num">02</div>
       <h3>3D-модель</h3>
       <p>Построение корпуса в SketchUp под габариты платы и модулей.</p>
     </div>
-    <div class="step reveal delay-2">
+    
+    <div class="step reveal delay-2" onclick="openModal('Подготовка печати', 'Для подготовки модели к печати использовался слайсер Polygon X. Были настроены параметры печати для ударопрочного ABS-пластика: температура экструдера и стола, плотность заполнения (около 20-30%), а также сгенерированы поддержки для сложных нависающих элементов корпуса.')">
       <div class="step-num">03</div>
       <h3>Подготовка печати</h3>
       <p>Настройка слайсера Polygon X: слои, поддержки, заполнение.</p>
     </div>
-    <div class="step reveal delay-3">
+    
+    <div class="step reveal delay-3" onclick="openModal('FDM-печать', 'Детали корпуса KA-01 были напечатаны на 3D-принтере PICASO Designer методом послойного наплавления (FDM). ABS-пластик выбран за его высокую механическую прочность и теплостойкость. После печати детали прошли механическую постобработку: удаление поддержек и шлифовку для придания гладкости.')">
       <div class="step-num">04</div>
       <h3>FDM-печать</h3>
       <p>Печать деталей корпуса на PICASO Designer из ABS-пластика.</p>
     </div>
-    <div class="step reveal delay-4">
+    
+    <div class="step reveal delay-4" onclick="openModal('Сборка и прошивка', 'На этом этапе была выполнена пайка электронных компонентов на макетной плате: модуля заряда TP4056, повышающего DC-DC преобразователя и самого микроконтроллера ESP32. Затем плата была установлена в корпус KA-01, подключен аккумулятор и дисплей. Финальный шаг — прошивка микроконтроллера и тестирование всех режимов работы.')">
       <div class="step-num">05</div>
       <h3>Сборка</h3>
       <p>Пайка электроники, установка платы, дисплея, АКБ. Прошивка.</p>
@@ -904,124 +707,100 @@ color:var(--muted);font-size:13.5px;
   </div>
 </section>
 
-<!-- APPS -->
-<section id="apps" class="container">
-  <div class="section-head reveal">
-    <span class="section-tag">// Применение</span>
-    <h2 class="section-title">Где использовать</h2>
-    <p class="section-sub">Практический инструмент для диагностики и обучения</p>
-  </div>
-  <div class="apps-grid">
-    <div class="app-card reveal">
-      <h3><span class="num">01</span> Домашние сети</h3>
-      <p>Проверка загруженности каналов, поиск «мёртвых зон» и помех от соседских роутеров.</p>
-    </div>
-    <div class="app-card reveal delay-1">
-      <h3><span class="num">02</span> Школы и вузы</h3>
-      <p>Наглядное пособие на уроках физики, информатики и технологии. Демонстрация радиопротоколов.</p>
-    </div>
-    <div class="app-card reveal delay-2">
-      <h3><span class="num">03</span> Администрирование</h3>
-      <p>Быстрый аудит офисных сетей, поиск неавторизованных точек доступа.</p>
-    </div>
-    <div class="app-card reveal delay-3">
-      <h3><span class="num">04</span> Обучение</h3>
-      <p>Практическое изучение микроконтроллеров, 3D-печати и схемотехники на реальном проекте.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ABOUT -->
+<!-- ABOUT & CONTACTS -->
 <section id="about" class="container">
   <div class="section-head reveal">
-    <span class="section-tag">// Проект</span>
-    <h2 class="section-title">О работе</h2>
+    <span class="section-tag">// О проекте KA-01</span>
+    <h2 class="section-title">Детали разработки</h2>
   </div>
   <div class="about-grid">
     <div class="about-text reveal">
       <p>
-        Проект выполнен в рамках тематики ВсОШ 2026/2027 учебного года
-        <strong>«Технологии прошлого — традиции будущего»</strong>.
-        В основе работы — классическая радиотехника и принципы пеленгации,
-        а инструменты — цифровое 3D-моделирование, аддитивное производство
-        и современные микроконтроллеры.
+        Проект <strong>KA-01</strong> представляет собой полностью автономное устройство, 
+        спроектированное для пассивного сканирования радиоэфира. В основе лежит 
+        классическая радиотехника и современные цифровые технологии.
       </p>
       <p>
-        <strong>Цель работы</strong> — спроектировать эргономичный разборный корпус,
-        изготовить его методом FDM-печати и собрать работоспособное автономное
-        устройство на базе <strong>ESP32-WROOM-32U</strong> с внешней антенной
+        <strong>Цель работы</strong> — создать эргономичный разборный корпус методом FDM-печати и 
+        собрать работоспособное устройство на базе <strong>ESP32-WROOM-32U</strong> с внешней антенной
         и цветным сенсорным дисплеем.
       </p>
       <p>
-        В ходе работы проведён анализ аналогов, применены методы ТРИЗ
-        (фокальные объекты, мозговой штурм, морфологический анализ),
-        разработана конструкторская документация и 3D-модель корпуса.
-        Детали напечатаны на 3D-принтере <strong>PICASO Designer</strong>
-        из ударопрочного ABS.
+        Устройство <strong>KA-01</strong> используется только для мониторинга и диагностики. 
+        Никаких активных атак или вмешательства в чужие сети не предусмотрено.
       </p>
-      <p>
-        Устройство используется <strong>только в пассивном режиме</strong>:
-        сканирование, мониторинг и диагностика радиоэфира. Никаких активных
-        атак или вмешательства в чужие сети не предусмотрено.
-      </p>
+      
+      <div class="legal" style="margin: 30px 0 0 0; padding: 20px;">
+        <div class="legal-icon">⚖️</div>
+        <div>
+          <h3 style="font-size: 15px;">Правовые ограничения</h3>
+          <p style="font-size: 13px;">
+            KA-01 предназначен исключительно для пассивного мониторинга. Запрещено использование 
+            для деаутентификации и несанкционированного доступа. Испытания проводятся только 
+            на собственных сетях или с разрешения владельца.
+          </p>
+        </div>
+      </div>
     </div>
-    <div class="info-card reveal delay-1">
-      <h3>Паспорт проекта</h3>
-      <div class="info-row"><span class="k">Автор</span><span class="v">Кузьмин Артемий</span></div>
-      <div class="info-row"><span class="k">Класс</span><span class="v">9 «Г»</span></div>
-      <div class="info-row"><span class="k">Руководитель</span><span class="v">Хузиахметов Р. Р.</span></div>
-<div class="info-row"><span class="k">Учреждение</span><span class="v">МОУ СОШ № 32</span></div>
-      <div class="info-row"><span class="k">Город</span><span class="v">Подольск</span></div>
-      <div class="info-row"><span class="k">Год</span><span class="v">2026</span></div>
-      <div class="info-row"><span class="k">Модель</span><span class="v" style="font-family:var(--mono);color:var(--accent)">KA-01</span></div>
+    
+    <div>
+      <div class="info-card reveal delay-1">
+        <h3>Паспорт проекта KA-01</h3>
+        <div class="info-row"><span class="k">Автор</span><span class="v">Кузьмин Артемий</span></div>
+        <div class="info-row"><span class="k">Модель</span><span class="v" style="color:var(--accent)">KA-01</span></div>
+        <div class="info-row"><span class="k">Платформа</span><span class="v">ESP32-WROOM-32U</span></div>
+        <div class="info-row"><span class="k">Корпус</span><span class="v">ABS-пластик (FDM)</span></div>
+        
+        <!-- Contacts & QR -->
+        <div class="qr-box">
+          <p>Ссылка на сайт проекта:</p>
+          <a href="https://mitproro.github.io/ka01-site/" target="_blank" class="link">https://mitproro.github.io/ka01-site/</a>
+          
+          <!-- QR Code Generation via API -->
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://mitproro.github.io/ka01-site/&color=000000&bgcolor=ffffff" alt="QR Code KA-01">
+          
+          <p>Наведи камеру телефона,<br>чтобы открыть сайт KA-01</p>
+        </div>
+        
+        <h3 style="margin-top: 25px;">Обратная связь</h3>
+        <ul class="contact-list">
+          <li><span>Email:</span> <a href="mailto:mitproro12@mail.ru">mitproro12@mail.ru</a></li>
+          <li><span>Telegram:</span> <a href="https://t.me/mitproro" target="_blank">@mitproro</a></li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- LEGAL -->
-<div class="legal reveal">
-  <div class="legal-icon">⚖️</div>
-  <div>
-    <h3>Правовые ограничения и этика использования</h3>
-    <p>
-      Устройство предназначено исключительно для пассивного мониторинга
-      радиоэфира. Запрещается использование для деаутентификации, глушения сигнала,
-      несанкционированного доступа к сетям и любого вмешательства в работу чужих
-      устройств. Испытания проводятся только на собственных сетях или с письменного
-      разрешения владельца. Автор не несёт ответственности за неправомерное
-      применение прибора.
-    </p>
+<footer>
+  <a href="#" class="logo"><div class="logo-dot"></div> KA-01</a>
+  <div class="foot-mid">Портативный анализатор беспроводных сетей KA-01</div>
+  <div>© 2026 · Кузьмин Артемий</div>
+</footer>
+
+<!-- MODAL POPUP -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h3 id="modalTitle">Заголовок</h3>
+    <p id="modalDesc">Описание...</p>
   </div>
 </div>
 
-<footer>
-  <a href="#" class="logo"><div class="logo-dot"></div> KA-01</a>
-  <div class="foot-mid">Портативное устройство для тестирования и анализа беспроводных сетей</div>
-  <div>© 2026 · Кузьмин Артемий · МОУ СОШ № 32</div>
-</footer>
-
-<button class="to-top" id="toTop" aria-label="Наверх">
-  <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-</button>
-
 <script>
-  // ---------- PROGRESS BAR ----------
+  // ---------- PROGRESS BAR & NAV ----------
   const progress = document.getElementById('progress');
   const nav = document.getElementById('nav');
-  const toTop = document.getElementById('toTop');
-
+  
   function onScroll(){
     const h = document.documentElement;
     const scrolled = h.scrollTop;
     const total = h.scrollHeight - h.clientHeight;
     progress.style.width = (total > 0 ? (scrolled / total) * 100 : 0) + '%';
     nav.classList.toggle('scrolled', scrolled > 20);
-    toTop.classList.toggle('show', scrolled > 600);
   }
   window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
-
-  toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 
   // ---------- MOBILE MENU ----------
   const burger = document.getElementById('burger');
@@ -1045,49 +824,28 @@ color:var(--muted);font-size:13.5px;
         revealObserver.unobserve(e.target);
       }
     });
-  }, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+  }, {threshold:0.1});
   document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-  // ---------- COUNTERS ----------
-  function animateCounter(el){
-    const target = parseFloat(el.dataset.target);
-    const decimals = parseInt(el.dataset.decimals || '0', 10);
-    const suffix = el.dataset.suffix || '';
-    const duration = 1400;
-    const start = performance.now();
+  // ---------- MODAL LOGIC (INTERACTIVE PROCESS) ----------
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDesc = document.getElementById('modalDesc');
 
-    function frame(now){
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
-      const value = (target * eased).toFixed(decimals);
-      el.textContent = value.replace('.', ',') + suffix;
-      if (t < 1) requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
+  function openModal(title, desc) {
+    modalTitle.textContent = title;
+    modalDesc.textContent = desc;
+    modal.classList.add('active');
   }
 
-  const counterObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting){
-        animateCounter(e.target);
-        counterObserver.unobserve(e.target);
-      }
-    });
-  }, {threshold:0.6});
-  document.querySelectorAll('.stat-num[data-target]').forEach(el => counterObserver.observe(el));
+  function closeModal() {
+    modal.classList.remove('active');
+  }
 
-  // ---------- ACTIVE NAV ----------
-const sections = [...document.querySelectorAll('section[id]')];
-  const links = [...document.querySelectorAll('[data-link]')];
-  const activeObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting){
-        const id = e.target.id;
-        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
-      }
-    });
-  }, {rootMargin:'-45% 0px -50% 0px'});
-  sections.forEach(s => activeObserver.observe(s));
+  // Close modal on click outside
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
 </script>
 </body>
 </html>
