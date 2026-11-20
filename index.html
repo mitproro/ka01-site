@@ -4,837 +4,531 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KA-01 — Портативный анализатор беспроводных сетей</title>
-<meta name="description" content="Автономное устройство KA-01 для пассивного сканирования и диагностики радиоэфира 2,4 ГГц (Wi-Fi и Bluetooth LE). Собственный корпус, FDM-печать, ESP32.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23080b10'/><circle cx='50' cy='50' r='18' fill='%2300e5ff'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  /* ================= CSS ПЕРЕМЕННЫЕ ================= */
   :root{
     --bg:#070a0e;
     --bg-2:#0b1119;
     --surface:#0f1722;
-    --surface-2:#131d2a;
+    --surface-2:#1a2433;
     --border:#1c2837;
-    --border-2:#253448;
     --text:#e8eef6;
     --muted:#8595aa;
-    --muted-2:#5d6b7e;
     --accent:#00e5ff;
     --accent-2:#00ffa3;
-    --warn:#ffb020;
-    --radius:18px;
-    --mono:'JetBrains Mono',ui-monospace,monospace;
-    --sans:'Manrope',system-ui,-apple-system,sans-serif;
+    --danger:#ff5470;
+    --radius:16px;
+    --mono:'JetBrains Mono',monospace;
+    --sans:'Manrope',system-ui,sans-serif;
+    --sidebar-width: 260px;
   }
 
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  html{scroll-behavior:smooth}
   body{
-    font-family:var(--sans);
-    background:var(--bg);
-    color:var(--text);
-    line-height:1.6;
-    overflow-x:hidden;
-    -webkit-font-smoothing:antialiased;
+    font-family:var(--sans); background:var(--bg); color:var(--text);
+    line-height:1.6; overflow-x:hidden; display:flex; min-height:100vh;
   }
-  ::selection{background:var(--accent);color:#001018}
-  ::-webkit-scrollbar{width:10px;height:10px}
-  ::-webkit-scrollbar-track{background:var(--bg)}
-  ::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:6px;border:2px solid var(--bg)}
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
   ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+  a{color:inherit; text-decoration:none}
+  img{max-width:100%; display:block}
 
-  a{color:inherit}
-  img{max-width:100%;display:block}
-  section{scroll-margin-top:80px}
-
-  /* ============ NAV ============ */
-  .progress{
-    position:fixed;top:0;left:0;height:2px;z-index:200;
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
-    width:0%;transition:width .1s linear;
-    box-shadow:0 0 12px var(--accent);
+  /* ================= SIDEBAR (GMAIL STYLE) ================= */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 64px; z-index: 1000;
+    background: rgba(7,10,14,0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; gap: 15px;
+    transition: padding-left 0.3s ease;
   }
-  nav{
-    position:fixed;top:0;left:0;right:0;z-index:100;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 6vw;
-    background:rgba(7,10,14,.72);
-    backdrop-filter:blur(16px) saturate(160%);
-    -webkit-backdrop-filter:blur(16px) saturate(160%);
-    border-bottom:1px solid rgba(28,40,55,.6);
-    transition:padding .3s;
+  .menu-btn {
+    width: 40px; height: 40px; border-radius: 50%; background: transparent;
+    border: none; color: var(--text); cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: background 0.2s;
   }
-  nav.scrolled{padding:10px 6vw;background:rgba(7,10,14,.92)}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:.4px;text-decoration:none;color:var(--text)}
-  .logo-dot{
-    width:10px;height:10px;border-radius:50%;
-    background:var(--accent);
-    box-shadow:0 0 14px var(--accent);
-    animation:pulse 2s infinite;
-  }
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.75)}}
-  .nav-links{display:flex;gap:6px;list-style:none;align-items:center}
-  .nav-links a{
-    color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;
-    padding:8px 14px;border-radius:8px;transition:color .2s,background .2s;
-    position:relative;
-  }
-  .nav-links a:hover{color:var(--text);background:rgba(255,255,255,.03)}
-  .nav-links a.active{color:var(--accent)}
-  .nav-links a.active::before{
-    content:'';position:absolute;left:14px;right:14px;bottom:4px;height:2px;
-    background:var(--accent);border-radius:2px;
-  }
-
-  .burger{
-    display:none;width:40px;height:40px;border-radius:10px;
-    background:transparent;border:1px solid var(--border);
-    cursor:pointer;position:relative;
-  }
-  .burger span{
-    position:absolute;left:11px;right:11px;height:2px;background:var(--text);
-    border-radius:2px;transition:transform .3s,opacity .3s;
-  }
-  .burger span:nth-child(1){top:14px}
-  .burger span:nth-child(2){top:19px}
-  .burger span:nth-child(3){top:24px}
-  .burger.open span:nth-child(1){transform:translateY(5px) rotate(45deg)}
-  .burger.open span:nth-child(2){opacity:0}
-  .burger.open span:nth-child(3){transform:translateY(-5px) rotate(-45deg)}
-
-  @media(max-width:900px){
-    .nav-links{
-      position:fixed;top:64px;left:0;right:0;
-      flex-direction:column;align-items:stretch;gap:4px;
-      background:rgba(7,10,14,.98);
-      backdrop-filter:blur(20px);
-      padding:16px 6vw 24px;
-      border-bottom:1px solid var(--border);
-      transform:translateY(-120%);transition:transform .35s cubic-bezier(.3,.9,.3,1);
-    }
-    .nav-links.open{transform:translateY(0)}
-    .nav-links a{padding:14px 16px;border-radius:10px;font-size:15px}
-    .burger{display:block}
-  }
-
-  /* ============ HERO ============ */
-  .hero{
-    min-height:100vh;
-    display:grid;
-    grid-template-columns:1.05fr .95fr;
-    align-items:center;
-    gap:60px;
-    padding:120px 6vw 80px;
-    position:relative;
-    overflow:hidden;
-  }
-  .hero::before{
-    content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
-    background:
-      radial-gradient(ellipse 55% 45% at 78% 38%, rgba(0,229,255,.12), transparent 65%),
-      radial-gradient(ellipse 50% 40% at 15% 85%, rgba(0,255,163,.07), transparent 65%);
-  }
-  .hero::after{
-    content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
-    background-image:
-      linear-gradient(rgba(28,40,55,.35) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(28,40,55,.35) 1px, transparent 1px);
-    background-size:60px 60px;
-    mask-image:radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
-    -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
-    opacity:.4;
-  }
-  .hero > *{position:relative;z-index:1}
-
-  .badge{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:7px 14px;border-radius:100px;
-    background:rgba(0,229,255,.07);
-    border:1px solid rgba(0,229,255,.25);
-    color:var(--accent);font-size:12.5px;font-weight:600;
-    margin-bottom:24px;
-    animation:fadeUp .8s ease both;
-  }
-  .badge .live{
-    width:7px;height:7px;border-radius:50%;background:var(--accent-2);
-    box-shadow:0 0 8px var(--accent-2);animation:pulse 1.6s infinite;
-  }
-  .hero h1{
-    font-size:clamp(38px,5.2vw,64px);
-    font-weight:800;line-height:1.05;letter-spacing:-2px;
-    margin-bottom:22px;
-    animation:fadeUp .8s .1s ease both;
-  }
-  .hero h1 .grad{
-    background:linear-gradient(120deg,var(--accent) 10%,var(--accent-2) 90%);
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  }
-  .hero .lead{
-    font-size:17.5px;color:var(--muted);max-width:560px;margin-bottom:34px;
-    animation:fadeUp .8s .2s ease both;
-  }
-  .hero-actions{display:flex;gap:14px;flex-wrap:wrap;animation:fadeUp .8s .3s ease both}
-  .btn{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:14px 26px;border-radius:12px;
-    font-weight:700;font-size:15px;text-decoration:none;
-    transition:transform .18s, box-shadow .3s, background .2s, border-color .2s;
-    cursor:pointer;border:none;font-family:var(--sans);
-    white-space:nowrap;
-  }
-  .btn-primary{
-    background:linear-gradient(135deg,var(--accent),#00a8c5);
-    color:#001018;
-    box-shadow:0 10px 30px -8px rgba(0,229,255,.5);
-    position:relative;overflow:hidden;
-  }
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px rgba(0,229,255,.6)}
-  .btn-ghost{
-    background:transparent;color:var(--text);
-    border:1px solid var(--border-2);
-  }
-  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
-
-  .hero-stats{
-    display:flex;gap:38px;margin-top:52px;flex-wrap:wrap;
-    animation:fadeUp .8s .4s ease both;
-  }
-  .stat-num{
-    font-size:30px;font-weight:800;font-family:var(--mono);
-    background:linear-gradient(120deg,var(--accent),var(--accent-2));
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    line-height:1.1;
-  }
-  .stat-num small{font-size:.6em;font-weight:600;opacity:.85;margin-left:2px}
-  .stat-label{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:4px;letter-spacing:.2px}
-
-  @keyframes fadeUp{
-    from{opacity:0;transform:translateY(20px)}
-    to{opacity:1;transform:none}
-  }
-
-  /* ============ DEVICE MOCKUP ============ */
-  .device-wrap{
-    display:flex;justify-content:center;align-items:center;
-    perspective:1400px;
-    animation:fadeUp 1s .3s ease both;
-  }
-  .device{
-    width:290px;height:370px;
-    background:linear-gradient(150deg,#1c1c22 0%,#0e0e12 60%,#08080b 100%);
-    border-radius:20px;
-    padding:20px;
-    position:relative;
-    transform:rotateY(-16deg) rotateX(8deg);
-    box-shadow:-40px 60px 100px -20px rgba(0,0,0,.85), -10px 10px 30px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.07), inset 0 -2px 6px rgba(0,0,0,.9);
-    animation:float 7s ease-in-out infinite;
-    border:1px solid #2a2a32;
-  }
-  @keyframes float{
-    0%,100%{transform:rotateY(-16deg) rotateX(8deg) translateY(0)}
-    50%{transform:rotateY(-16deg) rotateX(8deg) translateY(-16px)}
-  }
-  .screen{
-    width:100%;height:240px;
-    background:linear-gradient(180deg,#0f1925 0%,#081019 100%);
-    border-radius:10px;
-    border:2px solid #2a2a32;
-    overflow:hidden;
-    position:relative;
-    font-family:var(--mono);
-    color:#cfe4ff;
-    box-shadow:inset 0 0 30px rgba(0,229,255,.1);
-  }
-  .screen-bar{
-    display:flex;justify-content:space-between;
-    padding:6px 9px;font-size:9px;
-    background:linear-gradient(90deg,#1a3a5c,#0d2138);
-    color:#7fd6ff;letter-spacing:.5px;
-  }
-  .screen-title{
-    padding:8px 10px 4px;font-weight:700;font-size:12px;color:#fff;
-    display:flex;align-items:center;gap:8px;
-  }
-  .screen-title::before{
-    content:'';width:6px;height:6px;border-radius:50%;
-    background:#ff5a5a;box-shadow:0 0 8px #ff5a5a;
-    animation:pulse 1.2s infinite;
-  }
-  .screen-item{
-    padding:6px 12px;font-size:10.5px;color:#9fc4e0;
-    display:flex;align-items:center;gap:10px;
-    border-bottom:1px solid rgba(255,255,255,.04);
-  }
-  .screen-item.active{
-    background:rgba(0,229,255,.16);color:#fff;
-    border-left:2px solid var(--accent);
-    padding-left:10px;
-  }
-  .screen-scan{
-    position:absolute;left:0;right:0;height:1px;
-    background:linear-gradient(90deg,transparent,var(--accent),transparent);
-    animation:scan 2.6s linear infinite;
-    box-shadow:0 0 10px var(--accent);
-    opacity:.8;
-  }
-  @keyframes scan{0%{top:28px}100%{top:230px}}
-  .device-brand{
-    margin-top:14px;text-align:center;
-    font-family:var(--mono);font-size:12px;letter-spacing:4px;
-    color:#3a3a46;font-weight:700;
-  }
-  .device-side{
-    position:absolute;right:-9px;top:55px;width:9px;height:220px;
-    background:linear-gradient(90deg,#1c1c22,#08080b);
-    border-radius:0 8px 8px 0;
-    display:flex;flex-direction:column;justify-content:space-around;
-    padding:12px 0;align-items:center;
-  }
-  .device-side span{
-    writing-mode:vertical-rl;font-size:6.5px;color:#5a5a66;
-    letter-spacing:1.5px;font-family:var(--mono);font-weight:700;
-  }
-  .device-ant{
-    position:absolute;left:-7px;top:30px;width:7px;height:280px;
-    background:linear-gradient(90deg,#08080b,#2e2e38,#08080b);
-    border-radius:4px 0 0 4px;
-  }
-
-  @media(max-width:960px){
-    .hero{grid-template-columns:1fr;padding-top:110px;text-align:center}
-    .hero .lead{margin-left:auto;margin-right:auto}
-    .hero-actions,.hero-stats{justify-content:center}
-    .device-wrap{margin-top:50px}
-    .device{transform:rotateY(0) rotateX(0);animation:none}
-  }
-
-  /* ============ SECTION HEAD ============ */
-  .section-head{max-width:720px;margin-bottom:56px}
-  .section-tag{
-    font-family:var(--mono);font-size:12px;font-weight:700;
-    color:var(--accent);letter-spacing:2.5px;text-transform:uppercase;
-    margin-bottom:14px;display:inline-block;
-    padding:4px 10px;border-radius:6px;
-    background:rgba(0,229,255,.06);
-    border:1px solid rgba(0,229,255,.15);
-  }
-  .section-title{
-    font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-1.2px;line-height:1.1;
-    margin-bottom:16px;
-  }
-  .section-sub{color:var(--muted);font-size:17px;max-width:600px}
-  .container{padding:110px 6vw}
-
-  /* ============ GALLERY ============ */
-  #gallery{
-    background:var(--bg-2);
-    border-top:1px solid var(--border);
-    border-bottom:1px solid var(--border);
-  }
-  .gallery{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:16px;
-    grid-auto-rows:240px;
-  }
-  .gallery-item{
-    position:relative;border-radius:var(--radius);
-    overflow:hidden;
-    background:var(--surface);
-    border:1px solid var(--border);
-    transition:transform .4s cubic-bezier(.2,.9,.3,1), border-color .3s;
-    cursor:pointer;
-  }
-  .gallery-item:hover{
-    transform:translateY(-4px);
-    border-color:rgba(0,229,255,.4);
-    box-shadow:0 24px 50px -12px rgba(0,229,255,.15);
-    z-index: 10;
-  }
-  .gallery-item img{
-    width:100%;height:100%;object-fit:cover;
-    position:relative;z-index:2;
-    transition:transform .6s cubic-bezier(.2,.9,.3,1);
-  }
-  .gallery-item:hover img{transform:scale(1.06)}
-  .gallery-item figcaption{
-    position:absolute;left:0;right:0;bottom:0;z-index:3;
-    padding:20px 18px 14px;
-    background:linear-gradient(to top,rgba(0,0,0,.85),transparent);
-    font-size:13px;font-weight:600;color:#fff;
-  }
+  .menu-btn:hover { background: var(--surface-2); }
+  .menu-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2.5; }
   
-  .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 2; }
-  .gallery-item:nth-child(4) { grid-column: span 2; }
-  .gallery-item:nth-child(6) { grid-row: span 2; }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;}
+  .logo-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);}
 
-  @media(max-width:900px){
-    .gallery{grid-template-columns:repeat(2, 1fr);grid-auto-rows:200px;}
-    .gallery-item:nth-child(1) { grid-column: span 2; grid-row: span 1; }
-    .gallery-item:nth-child(4) { grid-column: span 1; }
-    .gallery-item:nth-child(6) { grid-row: span 1; }
+  /* Само меню */
+  .sidebar {
+    position: fixed; top: 64px; left: calc(-1 * var(--sidebar-width)); width: var(--sidebar-width);
+    height: calc(100vh - 64px); z-index: 999; background: var(--bg-2);
+    border-right: 1px solid var(--border); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px 15px; display: flex; flex-direction: column; gap: 5px; overflow-y: auto;
   }
-  @media(max-width:520px){
-    .gallery{grid-template-columns:1fr;grid-auto-rows:240px;}
-    .gallery-item:nth-child(n) { grid-column: span 1; grid-row: span 1; }
+  .sidebar.open { left: 0; }
+  .sidebar a {
+    display: flex; align-items: center; gap: 15px; padding: 14px 20px;
+    border-radius: 100px; color: var(--text); font-size: 15px; font-weight: 600;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .sidebar a:hover { background: var(--surface-2); }
+  .sidebar a.active { background: rgba(0, 229, 255, 0.12); color: var(--accent); }
+  .sidebar svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* Сдвиг контента на ПК */
+  .main-content {
+    flex: 1; transition: margin-left 0.3s ease; padding-top: 64px; min-height: 100vh;
+  }
+  @media(min-width: 1024px){
+    .topbar.shifted { padding-left: calc(var(--sidebar-width) + 20px); }
+    .main-content.shifted { margin-left: var(--sidebar-width); }
   }
 
-  /* ============ FEATURES ============ */
-  .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px;}
-  .feature{
-    background:linear-gradient(180deg,var(--surface),var(--bg-2));
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:30px;
-    transition:transform .3s, border-color .3s;
-    position:relative;overflow:hidden;
+  /* Затемнение на мобильных */
+  .sidebar-overlay {
+    position: fixed; inset: 0; top: 64px; background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px); z-index: 998; opacity: 0; pointer-events: none; transition: opacity 0.3s;
   }
-  .feature:hover{transform:translateY(-5px);border-color:rgba(0,229,255,.3);}
-  .feature-icon{
-    width:52px;height:52px;border-radius:14px;
-    background:linear-gradient(135deg,rgba(0,229,255,.1),rgba(0,255,163,.05));
-    display:flex;align-items:center;justify-content:center;
-    margin-bottom:20px;border:1px solid rgba(0,229,255,.15);
-  }
-  .feature-icon svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.9;}
-  .feature h3{font-size:18px;font-weight:700;margin-bottom:10px;}
-  .feature p{color:var(--muted);font-size:14.5px;}
+  .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+  @media(min-width: 1024px){ .sidebar-overlay { display: none; } }
 
-  /* ============ PROCESS (INTERACTIVE) ============ */
-  .process{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;position:relative}
-  @media(max-width:1000px){.process{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:520px){.process{grid-template-columns:1fr}}
+  /* ================= ОБЩИЕ СТИЛИ СТРАНИЦ ================= */
+  .page-section {
+    display: none; /* Скрыто по умолчанию (SPA) */
+    padding: 40px 6vw 80px; animation: fadeUp 0.6s ease forwards;
+  }
+  .page-section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-head { max-width: 720px; margin-bottom: 40px; }
+  .section-title { font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .section-title span { color: var(--accent); }
+  .section-sub { color: var(--muted); font-size: 16px; }
+
+  /* ================= ГЛАВНАЯ (HERO) ================= */
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; min-height: 70vh; }
+  @media(max-width: 900px){ .hero-grid { grid-template-columns: 1fr; text-align: center; } }
   
-  .step{
-    background:linear-gradient(180deg,var(--surface),var(--bg-2));
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:26px 22px;
-    position:relative;z-index:1;
-    cursor:pointer;
-    transition:border-color .3s, transform .3s, background .3s;
-  }
-  .step:hover{border-color:rgba(0,255,163,.5);transform:translateY(-4px);background:var(--surface-2);}
-  .step::after {
-    content: 'Нажми для деталей';
-    display: block;
-    margin-top: 15px;
-    font-size: 11px;
-    color: var(--accent);
-    opacity: 0;
-    transition: opacity .3s;
-  }
-  .step:hover::after { opacity: 1; }
+  .hero h1 { font-size: clamp(36px, 5vw, 56px); line-height: 1.1; letter-spacing: -2px; margin-bottom: 20px; }
+  .hero h1 span { background: linear-gradient(120deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--muted); font-size: 17px; margin-bottom: 30px; }
   
-  .step-num{
-    font-family:var(--mono);font-size:38px;font-weight:800;
-    line-height:1;margin-bottom:16px;
-    background:linear-gradient(135deg,rgba(0,229,255,.35),rgba(0,255,163,.15));
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  }
-  .step h3{font-size:15px;font-weight:700;margin-bottom:8px;}
+  .btn { display: inline-flex; padding: 14px 28px; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; border: none; font-family: var(--sans); }
+  .btn-primary { background: var(--accent); color: #000; box-shadow: 0 10px 20px -10px var(--accent); }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 25px -10px var(--accent); }
 
-  /* ============ MODAL ============ */
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-    z-index: 1000; display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  /* 3D-макет */
+  .device-wrap { display: flex; justify-content: center; perspective: 1000px; }
+  .device {
+    width: 280px; height: 360px; background: linear-gradient(145deg, #18181b, #09090b);
+    border-radius: 20px; padding: 20px; border: 1px solid #27272a;
+    box-shadow: -20px 30px 60px rgba(0,0,0,0.8); transform: rotateY(-15deg) rotateX(5deg);
+    animation: float 6s infinite ease-in-out; position: relative;
   }
-  .modal-overlay.active { opacity: 1; pointer-events: auto; }
-  .modal-content {
-    background: var(--surface-2);
-    border: 1px solid var(--border-2);
-    border-radius: var(--radius);
-    padding: 40px; max-width: 600px; width: 90%;
-    position: relative; transform: translateY(20px);
-    transition: transform 0.3s;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-  }
-  .modal-overlay.active .modal-content { transform: translateY(0); }
-  .modal-close {
-    position: absolute; top: 15px; right: 20px;
-    background: none; border: none; color: var(--muted);
-    font-size: 28px; cursor: pointer; transition: color 0.2s;
-  }
-  .modal-close:hover { color: var(--text); }
-  .modal-content h3 { font-size: 24px; color: var(--accent); margin-bottom: 15px; }
-  .modal-content p { color: var(--muted); font-size: 16px; line-height: 1.7; margin-bottom: 10px; }
+  @keyframes float { 0%,100% { transform: rotateY(-15deg) rotateX(5deg) translateY(0); } 50% { transform: rotateY(-15deg) rotateX(5deg) translateY(-15px); } }
+  .screen { background: #0f172a; height: 220px; border-radius: 8px; border: 2px solid #27272a; padding: 10px; font-family: var(--mono); font-size: 11px; color: #38bdf8; }
+  .screen-line { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .screen-line.active { background: rgba(56,189,248,0.2); border-left: 2px solid #38bdf8; padding-left: 5px; color: #fff; }
+  .device-brand { text-align: center; margin-top: 15px; font-family: var(--mono); letter-spacing: 3px; color: #3f3f46; font-weight: bold; }
 
-  /* ============ ABOUT & CONTACTS ============ */
-  .about-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px}
-  @media(max-width:900px){.about-grid{grid-template-columns:1fr}}
-  .about-text p{color:var(--muted);margin-bottom:16px;font-size:15.5px;}
-  .about-text strong{color:var(--text);font-weight:700}
-  
-  .info-card{
-    background:linear-gradient(180deg,var(--surface),var(--bg-2));
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:28px;
+  /* ================= КАРТОЧКИ ФУНКЦИЙ ================= */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
   }
-  .info-card h3{font-size:16px;font-weight:700;margin-bottom:20px;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:10px;}
+  .card:hover { transform: translateY(-5px); border-color: rgba(0,229,255,0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .card::after { content: 'Подробнее ↗'; position: absolute; bottom: 20px; right: 20px; font-size: 11px; color: var(--accent); opacity: 0; transition: 0.3s; font-family: var(--mono); }
+  .card:hover::after { opacity: 1; }
+  .card h3 { font-size: 18px; margin-bottom: 8px; color: var(--accent-2); }
+  .card p { font-size: 14px; color: var(--muted); }
   
-  /* QR & CONTACTS BOX */
-  .qr-box {
-    margin-top: 30px; padding: 25px; text-align: center;
-    background: rgba(0,229,255,0.03); border: 1px dashed var(--accent);
-    border-radius: var(--radius);
-  }
-  .qr-box img { width: 150px; height: 150px; margin: 0 auto 15px auto; border-radius: 8px; }
+  /* Цвета для разных типов карточек */
+  .card.wifi h3 { color: #38bdf8; }
+  .card.attack { border-color: rgba(255, 84, 112, 0.3); }
+  .card.attack h3 { color: var(--danger); }
+  .card.attack:hover { border-color: var(--danger); box-shadow: 0 10px 30px rgba(255, 84, 112, 0.15); }
+  .card.attack::after { color: var(--danger); }
+
+  /* ================= ТАБЛИЦА ХАРАКТЕРИСТИК ================= */
+  .specs-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+  .specs-table tr { border-bottom: 1px solid var(--border); }
+  .specs-table tr:last-child { border: none; }
+  .specs-table td { padding: 16px 20px; font-size: 15px; }
+  .specs-table td:first-child { color: var(--muted); width: 40%; background: rgba(0,0,0,0.2); }
+  .specs-table td:last-child { font-weight: 600; }
+
+  /* ================= ПАСПОРТ И КОНТАКТЫ ================= */
+  .about-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
+  @media(max-width: 900px){ .about-grid { grid-template-columns: 1fr; } }
+  
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; }
+  .info-card h3 { font-size: 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+  
+  /* ИСПРАВЛЕНИЕ СЛИПШЕГОСЯ ТЕКСТА (Flexbox) */
+  .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 14.5px; }
+  .info-row:last-of-type { border: none; }
+  .info-row .k { color: var(--muted); margin-right: 15px; }
+  .info-row .v { font-weight: 600; text-align: right; color: var(--text); }
+
+  .qr-box { margin-top: 25px; padding: 20px; text-align: center; background: rgba(0,229,255,0.03); border: 1px dashed var(--accent); border-radius: var(--radius); }
+  .qr-box img { width: 140px; height: 140px; margin: 0 auto 10px; border-radius: 8px; border: 4px solid #fff; }
   .qr-box p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-  .qr-box .link { font-family: var(--mono); font-size: 13px; color: var(--accent); word-break: break-all; margin-bottom: 15px; display: block; }
-  
-  .contact-list { list-style: none; margin-top: 20px; }
-  .contact-list li { margin-bottom: 12px; font-size: 14.5px; }
-  .contact-list span { color: var(--muted); display: inline-block; width: 80px; }
-  .contact-list a { color: var(--text); text-decoration: none; font-weight: 600; transition: color 0.2s; }
-  .contact-list a:hover { color: var(--accent); }
+  .qr-box .link { font-family: var(--mono); font-size: 12px; color: var(--accent); word-break: break-all; }
 
-  /* ============ LEGAL ============ */
-  .legal{
-    margin:0 6vw 110px; padding:32px 36px; border-radius:var(--radius);
-    background:linear-gradient(135deg,rgba(255,176,32,.07),rgba(255,176,32,.015));
-    border:1px solid rgba(255,176,32,.25); display:flex; gap:22px;
-  }
-  .legal-icon{font-size:24px;}
-  .legal h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--warn);}
-  .legal p{font-size:14px;color:var(--muted);line-height:1.7;}
+  /* ================= ГАЛЕРЕЯ ================= */
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+  .gallery-item { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); aspect-ratio: 4/3; position: relative; }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+  .gallery-item:hover img { transform: scale(1.08); }
+  .gallery-item figcaption { position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-size: 13px; font-weight: 600; }
 
-  /* ============ FOOTER ============ */
-  footer{
-    padding:44px 6vw;border-top:1px solid var(--border);
-    display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
-    color:var(--muted);font-size:13.5px;
-  }
-  footer .logo{color:var(--text);font-size:17px}
+  /* ================= МОДАЛЬНОЕ ОКНО ================= */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; padding: 20px; }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal-content { background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); padding: 35px; max-width: 600px; width: 100%; position: relative; transform: scale(0.95); transition: 0.3s; max-height: 90vh; overflow-y: auto; }
+  .modal-overlay.active .modal-content { transform: scale(1); }
+  .modal-close { position: absolute; top: 15px; right: 20px; background: none; border: none; color: var(--muted); font-size: 28px; cursor: pointer; transition: 0.2s; }
+  .modal-close:hover { color: var(--danger); transform: rotate(90deg); }
+  .modal-content h3 { font-size: 22px; color: var(--accent); margin-bottom: 15px; }
+  .modal-content p { color: var(--text); font-size: 15px; margin-bottom: 12px; line-height: 1.7; }
+  .modal-content ul { padding-left: 20px; margin-bottom: 15px; color: var(--muted); font-size: 14px; }
+  .modal-content li { margin-bottom: 8px; }
 
-  /* ============ REVEAL ============ */
-  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
-  .reveal.visible{opacity:1;transform:none}
-  .reveal.delay-1{transition-delay:.08s}
-  .reveal.delay-2{transition-delay:.16s}
-  .reveal.delay-3{transition-delay:.24s}
+  /* ================= ПЛАШКА (TOAST) ================= */
+  .toast { position: fixed; bottom: -150px; right: 20px; z-index: 3000; background: var(--surface-2); border: 1px solid var(--accent); border-left: 4px solid var(--accent); border-radius: 12px; padding: 15px 20px; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; gap: 15px; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .toast.show { bottom: 20px; }
+  .toast-content { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .toast-content strong { color: var(--accent); display: block; margin-bottom: 5px; font-size: 14px; }
+  .toast-content code { background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; font-family: var(--mono); }
+  .toast-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+  .toast-close:hover { color: var(--danger); }
+  @media(max-width: 600px) { .toast { left: 20px; right: 20px; max-width: none; } }
+
 </style>
 </head>
 <body>
 
-<div class="progress" id="progress"></div>
+<!-- ПЛАШКА ОБНОВЛЕНИЯ -->
+<div class="toast" id="refreshToast">
+  <div class="toast-content">
+    <strong>Не видите изменений?</strong>
+    Если сайт не обновился, сбросьте кэш браузера:
+    <br>• <b>Компьютер:</b> нажмите <code>Ctrl + F5</code> (или <code>Cmd + Shift + R</code> на Mac).
+    <br>• <b>Телефон:</b> потяните страницу вниз для перезагрузки или откройте в режиме «Инкогнито».
+  </div>
+  <button class="toast-close" onclick="closeToast()">×</button>
+</div>
 
-<!-- NAV -->
-<nav id="nav">
-  <a href="#" class="logo"><div class="logo-dot"></div> KA-01</a>
-  <ul class="nav-links" id="navLinks">
-    <li><a href="#gallery" data-link>Галерея</a></li>
-    <li><a href="#features" data-link>Функции</a></li>
-    <li><a href="#process" data-link>Как сделано</a></li>
-    <li><a href="#about" data-link>О проекте</a></li>
-  </ul>
-  <button class="burger" id="burger" aria-label="Меню">
-    <span></span><span></span><span></span>
+<!-- ТОПБАР -->
+<nav class="topbar" id="topbar">
+  <button class="menu-btn" id="menuBtn">
+    <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
   </button>
+  <a href="#" class="logo"><div class="logo-dot"></div> KA-01</a>
 </nav>
 
-<!-- HERO -->
-<header class="hero">
-  <div>
-    <div class="badge"><span class="live"></span> Инновационный проект · Модель KA-01</div>
-    <h1>Карманный <span class="grad">анализатор</span><br>сетей KA-01</h1>
-    <p class="lead">
-      <strong>KA-01</strong> — это автономное устройство для пассивного сканирования и диагностики радиоэфира
-      диапазона 2,4 ГГц (Wi-Fi 802.11 b/g/n и Bluetooth LE). Собственный разборный
-      корпус, FDM-печать и сборка на ESP32.
-    </p>
-    <div class="hero-actions">
-      <a href="#gallery" class="btn btn-primary">Смотреть фото</a>
-      <a href="#process" class="btn btn-ghost">Как создавался KA-01</a>
-    </div>
-    <div class="hero-stats">
+<!-- ОВЕРЛЕЙ И БОКОВОЕ МЕНЮ -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebar">
+  <a onclick="navTo('home', this)" class="active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Обзор KA-01
+  </a>
+  <a onclick="navTo('features', this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Функционал
+  </a>
+  <a onclick="navTo('specs', this)">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> Характеристики
+  </a>
+  <a onclick="navTo('process', this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Как создавался
+  </a>
+  <a onclick="navTo('gallery', this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> Фотогалерея
+  </a>
+  <a onclick="navTo('about', this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> О проекте
+  </a>
+</aside>
+
+<!-- КОНТЕНТ -->
+<main class="main-content" id="mainContent">
+
+  <!-- ГЛАВНАЯ -->
+  <section id="home" class="page-section active">
+    <div class="hero-grid hero">
       <div>
-        <div class="stat-num">2.4 <small>ГГц</small></div>
-        <div class="stat-label">Wi-Fi + BLE</div>
+        <div style="display:inline-block; padding:6px 14px; border-radius:50px; background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); color:var(--accent); font-size:12px; font-weight:700; margin-bottom:20px;">Модель KA-01</div>
+        <h1>Портативный <span>анализатор</span> сетей</h1>
+        <p>Автономное устройство для пассивного сканирования и аудита радиоэфира диапазона 2,4 ГГц. Собственный разборный корпус, FDM-печать и сборка на ESP32-WROOM-32U.</p>
+        <button class="btn btn-primary" onclick="navTo('features', document.querySelectorAll('.sidebar a')[1])">Изучить функционал</button>
       </div>
-      <div>
-        <div class="stat-num">5 <small>ч</small></div>
-        <div class="stat-label">автономной работы</div>
+      <div class="device-wrap">
+        <div class="device">
+          <div class="screen">
+            <div style="text-align:center; background:#1e293b; margin-bottom:10px; padding:2px;">CH: 1 D: 39%</div>
+            <div class="screen-line active">♦ Recon</div>
+            <div class="screen-line">📶 WiFi</div>
+            <div class="screen-line">🔵 Bluetooth</div>
+            <div class="screen-line">⚙ Device</div>
+            <div class="screen-line">↻ Reboot</div>
+          </div>
+          <div class="device-brand">KA-01</div>
+        </div>
       </div>
-      <div>
-        <div class="stat-num">153 <small>г</small></div>
-        <div class="stat-label">масса в сборе</div>
-      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="device-wrap">
-    <div class="device">
-      <div class="device-ant"></div>
-      <div class="device-side">
-        <span>PWR</span><span>ESP-32U</span><span>+5V</span><span>USB</span>
-      </div>
-      <div class="screen">
-        <div class="screen-bar"><span>CH: 01</span><span>93%</span></div>
-        <div class="screen-title">KA-01 Scanner</div>
-        <div class="screen-item active"><span>📡</span> Scan</div>
-        <div class="screen-item"><span>📶</span> WiFi</div>
-        <div class="screen-item"><span>🔵</span> Bluetooth</div>
-        <div class="screen-item"><span>📱</span> Device</div>
-        <div class="screen-item"><span>↻</span> Reboot</div>
-        <div class="screen-scan"></div>
-      </div>
-      <div class="device-brand">MODEL: KA-01</div>
-    </div>
-  </div>
-</header>
-
-<!-- GALLERY -->
-<section id="gallery" class="container">
-  <div class="section-head reveal">
-    <span class="section-tag">// Фотогалерея KA-01</span>
-    <h2 class="section-title">Устройство и процесс</h2>
-    <p class="section-sub">Готовый прибор KA-01, внутренняя компоновка, интерфейс и рабочие режимы</p>
-  </div>
-
-  <div class="gallery">
-    <figure class="gallery-item reveal">
-      <img src="photo-1.jpg" alt="Готовое устройство KA-01" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Готовое устройство KA-01 (в корпусе)</figcaption>
-    </figure>
-    <figure class="gallery-item reveal delay-1">
-      <img src="photo-2.jpg" alt="Плата и антенна" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Макетная плата, дисплей и антенна</figcaption>
-    </figure>
-    <figure class="gallery-item reveal delay-2">
-      <img src="photo-3.jpg" alt="Аккумулятор и модули" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Li-Po аккумулятор и модули питания</figcaption>
-    </figure>
-    <figure class="gallery-item reveal delay-3">
-      <img src="photo-4.jpg" alt="Режим сканирования" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>KA-01: Режим Live Activity</figcaption>
-    </figure>
-    <figure class="gallery-item reveal delay-4">
-      <img src="photo-5.jpg" alt="Работа в корпусе" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Устройство KA-01 в работе</figcaption>
-    </figure>
-    <figure class="gallery-item reveal delay-5">
-      <img src="photo-6.jpg" alt="Меню настроек" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Меню настроек KA-01</figcaption>
-    </figure>
-    <figure class="gallery-item reveal">
-      <img src="photo-7.jpg" alt="Меню устройства" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Меню управления KA-01</figcaption>
-    </figure>
-    <figure class="gallery-item reveal delay-1">
-      <img src="photo-8.jpg" alt="Bluetooth атаки" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Демонстрация BLE-режимов</figcaption>
-    </figure>
-    <figure class="gallery-item reveal delay-2">
-      <img src="photo-9.jpg" alt="Bluetooth снифферы" loading="lazy" onerror="this.style.display='none'">
-      <figcaption>Снифферы и сканеры KA-01</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section id="features" class="container">
-  <div class="section-head reveal">
-    <span class="section-tag">// Функционал KA-01</span>
-    <h2 class="section-title">Что умеет KA-01</h2>
-    <p class="section-sub">Пассивная диагностика радиоэфира — без вмешательства в чужие сети</p>
-  </div>
-  <div class="features-grid">
-    <div class="feature reveal">
-      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M2 8.82a15 15 0 0 1 20 0M5 12.86a10 10 0 0 1 14 0M8.5 16.43a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg></div>
-      <h3>Сканирование Wi-Fi</h3>
-      <p>Поиск всех сетей вокруг: SSID, RSSI, канал, тип шифрования. Выявление устаревших WEP/WPA.</p>
-    </div>
-    <div class="feature reveal delay-1">
-      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 5 5-9"/></svg></div>
-      <h3>График каналов 1–13</h3>
-      <p>Визуальная диаграмма загруженности эфира в реальном времени. Помогает выбрать свободный канал.</p>
-    </div>
-    <div class="feature reveal delay-2">
-      <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>
-      <h3>Bluetooth LE</h3>
-      <p>Обнаружение BLE-устройств, трекеров и маячков. Оценка плотности беспроводных устройств.</p>
-    </div>
-    <div class="feature reveal delay-3">
-      <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <h3>Внешняя антенна</h3>
-      <p>Всенаправленная антенна 2,4 ГГц через пигтейл U.FL → SMA. Повышенная дальность приёма.</p>
-    </div>
-  </div>
-</section>
-
-<!-- PROCESS (INTERACTIVE) -->
-<section id="process" class="container" style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
-  <div class="section-head reveal">
-    <span class="section-tag">// Производство KA-01</span>
-    <h2 class="section-title">Как сделано устройство</h2>
-    <p class="section-sub">Нажми на любой этап, чтобы узнать подробности процесса</p>
-  </div>
-  
-  <div class="process">
-    <div class="step reveal" onclick="openModal('Проектирование', 'Разработка концепции велась с использованием методов ТРИЗ. Был проведен анализ существующих аналогов (от радиопеленгаторов до Flipper Zero). В качестве основной платформы выбран микроконтроллер ESP32-WROOM-32U с внешней антенной, обеспечивающий оптимальный баланс цены и производительности для задач пассивного сканирования.')">
-      <div class="step-num">01</div>
-      <h3>Проектирование</h3>
-      <p>Концепция методами ТРИЗ, анализ аналогов, подбор компонентов.</p>
+  <!-- ФУНКЦИОНАЛ (ИЗ PDF) -->
+  <section id="features" class="page-section">
+    <div class="section-head">
+      <h2 class="section-title">Функционал <span>KA-01</span></h2>
+      <p class="section-sub">Нажми на любую карточку, чтобы прочитать подробное описание режима работы (согласно документации ESP32 Marauder).</p>
     </div>
     
-    <div class="step reveal delay-1" onclick="openModal('3D-модель', 'Корпус KA-01 был спроектирован в САПР SketchUp. Модель создавалась под точные габариты платы ESP32, дисплея 2.8 дюйма и Li-Po аккумулятора. Предусмотрен защитный бортик для экрана, вынесенная антенна и рельефная маркировка портов. Корпус состоит из двух разборных частей для удобства сборки и ремонта.')">
-      <div class="step-num">02</div>
-      <h3>3D-модель</h3>
-      <p>Построение корпуса в SketchUp под габариты платы и модулей.</p>
+    <!-- WiFi Sniffers -->
+    <h3 style="color:var(--accent); margin:30px 0 15px; font-size:20px;">1. Раздел Recon и WiFi Sniffers</h3>
+    <div class="cards-grid">
+      <div class="card wifi" onclick="openModal('Recon (Разведка)', '<p><b>Start WiFi / Start BLE:</b> Потоковый фоновый сбор информации. Антенна циклически сканирует эфир, собирая идентификаторы устройств без отправки каких-либо сигналов в ответ.</p><p><b>Probe Request Sniff:</b> Перехват поисковых запросов от смартфонов поблизости. Помогает увидеть списки Wi-Fi сетей, к которым эти телефоны подключались ранее.</p><p><b>Beacon Sniff:</b> Ловит пакеты-маяки от роутеров, мгновенно формируя базу данных доступных точек доступа.</p><p><b>Deauth Sniff:</b> Радио-оборона. Сигнализирует на дисплее, если сторонний прибор прямо сейчас пытается атаковать или глушить эфир.</p>')">
+        <h3>Recon & Sniffers</h3>
+        <p>Пассивный сбор данных и скрытый мониторинг Wi-Fi сетей.</p>
+      </div>
+      <div class="card wifi" onclick="openModal('Аналитика и перехват (Sniffers)', '<p><b>EAPOL/PMKID Scan:</b> Специализированный автоматический перехват Wi-Fi «рукопожатий» (Handshakes) при авторизации клиентов. Данные пишутся на карту памяти.</p><p><b>Packet Monitor:</b> Графический осциллограф, выводящий динамику сетевой активности в реальном времени.</p><p><b>Channel Analyzer:</b> Анализатор спектра каналов (с 1 по 14). Наглядно демонстрирует графиком, какие частоты свободны.</p><p><b>Raw Capture:</b> Запись сырого трафика в файл .pcap на MicroSD для детального изучения в Wireshark.</p>')">
+        <h3>Аналитика WiFi</h3>
+        <p>Перехват сетевых дампов и анализ спектра каналов.</p>
+      </div>
+      <div class="card wifi" onclick="openModal('Радиопеленг и детекция', '<p><b>Detect Pwnagotchi / Pineapple:</b> Автоматическое распознавание развернутых поблизости хакерских платформ по их уникальным сервисным пакетам.</p><p><b>Fox Hunt (Охота на лис):</b> Инструмент физического поиска прибора по уровню сигнала (RSSI). Помогает определить направление на скрытый роутер или трекер.</p><p><b>MAC Monitor:</b> Позволяет забить конкретный MAC-адрес и оповещает, как только цель выходит на связь в эфире.</p><p><b>SAE Commit:</b> Захват пакетов аутентификации современного стандарта WPA3.</p>')">
+        <h3>Радиопеленг</h3>
+        <p>Детекция хакерских платформ и поиск устройств (Fox Hunt).</p>
+      </div>
     </div>
-    
-    <div class="step reveal delay-2" onclick="openModal('Подготовка печати', 'Для подготовки модели к печати использовался слайсер Polygon X. Были настроены параметры печати для ударопрочного ABS-пластика: температура экструдера и стола, плотность заполнения (около 20-30%), а также сгенерированы поддержки для сложных нависающих элементов корпуса.')">
-      <div class="step-num">03</div>
-      <h3>Подготовка печати</h3>
-      <p>Настройка слайсера Polygon X: слои, поддержки, заполнение.</p>
-    </div>
-    
-    <div class="step reveal delay-3" onclick="openModal('FDM-печать', 'Детали корпуса KA-01 были напечатаны на 3D-принтере PICASO Designer методом послойного наплавления (FDM). ABS-пластик выбран за его высокую механическую прочность и теплостойкость. После печати детали прошли механическую постобработку: удаление поддержек и шлифовку для придания гладкости.')">
-      <div class="step-num">04</div>
-      <h3>FDM-печать</h3>
-      <p>Печать деталей корпуса на PICASO Designer из ABS-пластика.</p>
-    </div>
-    
-    <div class="step reveal delay-4" onclick="openModal('Сборка и прошивка', 'На этом этапе была выполнена пайка электронных компонентов на макетной плате: модуля заряда TP4056, повышающего DC-DC преобразователя и самого микроконтроллера ESP32. Затем плата была установлена в корпус KA-01, подключен аккумулятор и дисплей. Финальный шаг — прошивка микроконтроллера и тестирование всех режимов работы.')">
-      <div class="step-num">05</div>
-      <h3>Сборка</h3>
-      <p>Пайка электроники, установка платы, дисплея, АКБ. Прошивка.</p>
-    </div>
-  </div>
-</section>
 
-<!-- ABOUT & CONTACTS -->
-<section id="about" class="container">
-  <div class="section-head reveal">
-    <span class="section-tag">// О проекте KA-01</span>
-    <h2 class="section-title">Детали разработки</h2>
-  </div>
-  <div class="about-grid">
-    <div class="about-text reveal">
-      <p>
-        Проект <strong>KA-01</strong> представляет собой полностью автономное устройство, 
-        спроектированное для пассивного сканирования радиоэфира. В основе лежит 
-        классическая радиотехника и современные цифровые технологии.
-      </p>
-      <p>
-        <strong>Цель работы</strong> — создать эргономичный разборный корпус методом FDM-печати и 
-        собрать работоспособное устройство на базе <strong>ESP32-WROOM-32U</strong> с внешней антенной
-        и цветным сенсорным дисплеем.
-      </p>
-      <p>
-        Устройство <strong>KA-01</strong> используется только для мониторинга и диагностики. 
-        Никаких активных атак или вмешательства в чужие сети не предусмотрено.
-      </p>
+    <!-- Scanners -->
+    <h3 style="color:var(--accent); margin:30px 0 15px; font-size:20px;">2. Сканеры (Scanners)</h3>
+    <div class="cards-grid">
+      <div class="card" onclick="openModal('Внутрисетевой аудит', '<p><b>Ping Scan / ARP Scan:</b> Простукивание локальной сети (LAN). Показывает списки всех подключенных к роутеру устройств (ПК, камеры, принтеры) и сопоставляет их IP и MAC-адреса.</p><p><b>Port Scan All:</b> Поиск потенциальных уязвимостей на выбранном сетевом узле путем сканирования его портов.</p><p><b>SSH, Telnet, SMTP, DNS, HTTP, HTTPS, RDP Scan:</b> Проверка портов удаленного управления (22, 23, 25, 53, 80, 443, 3389). Выявляет оборудование без защиты.</p>')">
+        <h3>Сканер портов и сети</h3>
+        <p>Внутрисетевой аудит, поиск устройств и открытых портов.</p>
+      </div>
+    </div>
+
+    <!-- Attacks -->
+    <h3 style="color:var(--danger); margin:30px 0 15px; font-size:20px;">3. Тестирование уязвимостей (Attacks) ⚠️</h3>
+    <div class="cards-grid">
+      <div class="card attack" onclick="openModal('Wi-Fi Атаки (Часть 1)', '<p style=&quot;color:var(--danger)&quot;>⚠️ Только для тестирования собственных сетей!</p><p><b>Beacon Spam:</b> Лавинная трансляция ложных Wi-Fi точек доступа. Проверяет стабильность устройств в условиях радиошума.</p><p><b>Probe Req Flood:</b> Затопление роутера миллионами ложных запросов на подключение.</p><p><b>Evil Portal:</b> Подмена легитимной сети открытым аналогом с фишинговой страницей. Демонстрирует риски авторизации в публичных сетях.</p>')">
+        <h3>Wi-Fi Атаки</h3>
+        <p>Beacon Spam, Evil Portal, Probe Flood.</p>
+      </div>
+      <div class="card attack" onclick="openModal('Wi-Fi Атаки (Часть 2)', '<p><b>Deauth Flood:</b> Отправка пакетов разъединения. Используется для аудита защищенности камер и датчиков умного дома.</p><p><b>AP Clone Spam:</b> Клонирует имя оригинальной сети, проверяя, сможет ли устройство переключиться на ложную станцию.</p><p><b>Karma:</b> Захват контроля над устаревшими смартфонами. Плата маскируется под ту сеть, которую ищет телефон.</p><p><b>Bad Msg / Assoc Sleep:</b> Отправка поврежденных фреймов или команд перехода в спящий режим.</p>')">
+        <h3>Стресс-тесты Wi-Fi</h3>
+        <p>Deauth, Karma, AP Clone, Bad Msg.</p>
+      </div>
+      <div class="card attack" onclick="openModal('Bluetooth Атаки', '<p><b>Sour Apple / Apple Juice:</b> Спам краш-пакетами на устройства Apple. Вызывает всплывающие окна подключения, блокируя интерфейс.</p><p><b>Swiftpair Spam:</b> Массированная отправка пакетов сопряжения на Windows.</p><p><b>Samsung / Google BLE Spam:</b> Зависание интерфейса Android-смартфонов из-за push-уведомлений.</p><p><b>Spoof Airtag:</b> Клонирование сигналов меток Apple AirTag.</p>')">
+        <h3>Bluetooth Атаки</h3>
+        <p>BLE Spam (Apple, Windows, Android), Spoofing.</p>
+      </div>
+    </div>
+
+    <!-- Bluetooth Sniffers & General -->
+    <h3 style="color:var(--accent); margin:30px 0 15px; font-size:20px;">4. Bluetooth и Общие настройки</h3>
+    <div class="cards-grid">
+      <div class="card" onclick="openModal('Bluetooth Sniffers', '<p><b>Bluetooth Sniffer / Analyze:</b> Перехват и детальный разбор рекламных пакетов BLE-устройств.</p><p><b>FindMy Sniff / Monitor:</b> Обнаружение трекеров Apple (AirTag, iPhone). Позволяет вычислить скрытый маячок слежки.</p><p><b>Detect Card Skimmer:</b> Поиск мошеннических Bluetooth-модулей в банкоматах.</p><p><b>Fox Hunt (BLE):</b> Точный поиск местоположения потерянного BLE-устройства.</p>')">
+        <h3>Bluetooth Снифферы</h3>
+        <p>Поиск трекеров (AirTag), скиммеров и анализ BLE.</p>
+      </div>
+      <div class="card" onclick="openModal('Wi-Fi General', '<p><b>Generate / Add SSIDs:</b> Наполнение базы имен сетей (ввод стилусом).</p><p><b>Join WiFi:</b> Подключение Marauder к стороннему роутеру.</p><p><b>Start AP (WebUI):</b> Создание точки доступа. Позволяет зайти в настройки через браузер телефона.</p><p><b>Set MACs:</b> Спуфинг (подмена) физического MAC-адреса платы.</p><p><b>Upload Wardrive L:</b> Экспорт логов на внешние картографические сервисы.</p>')">
+        <h3>Общие настройки WiFi</h3>
+        <p>Спуфинг MAC, WebUI, подключение и менеджмент.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ХАРАКТЕРИСТИКИ -->
+  <section id="specs" class="page-section">
+    <div class="section-head">
+      <h2 class="section-title">Технические <span>характеристики</span></h2>
+      <p class="section-sub">Аппаратная платформа устройства KA-01</p>
+    </div>
+    <table class="specs-table">
+      <tr><td>Микроконтроллер</td><td>ESP32-WROOM-32U (2 ядра Xtensa LX6, 240 МГц)</td></tr>
+      <tr><td>Радиоинтерфейсы</td><td>Wi-Fi 802.11 b/g/n, Bluetooth 4.2 BR/EDR + BLE</td></tr>
+      <tr><td>Дисплей</td><td>2,8" TFT SPI 240×320 (драйвер ILI9341)</td></tr>
+      <tr><td>Управление</td><td>Резистивный сенсорный слой XPT2046 (стилус)</td></tr>
+      <tr><td>Антенна</td><td>Внешняя всенаправленная 2,4 ГГц (U.FL -> SMA)</td></tr>
+      <tr><td>Питание</td><td>Li-Po аккумулятор 3,7 В / 1100 мА·ч</td></tr>
+      <tr><td>Зарядка</td><td>Модуль TP4056 с защитой аккумулятора</td></tr>
+      <tr><td>Преобразователь</td><td>DC-DC Step-Up 5 В (до 3 А)</td></tr>
+      <tr><td>Корпус</td><td>ABS-пластик, FDM-печать (PICASO Designer)</td></tr>
+      <tr><td>Масса</td><td>153 г (в сборе)</td></tr>
+      <tr><td>Себестоимость</td><td>≈ 2 550 ₽</td></tr>
+    </table>
+  </section>
+
+  <!-- КАК СДЕЛАНО -->
+  <section id="process" class="page-section">
+    <div class="section-head">
+      <h2 class="section-title">Как создавался <span>KA-01</span></h2>
+      <p class="section-sub">Нажми на этап, чтобы узнать подробности производства</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card" onclick="openModal('1. Проектирование', '<p>Разработка концепции велась с использованием методов ТРИЗ. Был проведен анализ существующих аналогов. В качестве платформы выбран ESP32-WROOM-32U с внешней антенной, обеспечивающий баланс цены и производительности.</p>')">
+        <h3>01. Проектирование</h3><p>Анализ аналогов, ТРИЗ, подбор компонентов.</p>
+      </div>
+      <div class="card" onclick="openModal('2. 3D-моделирование', '<p>Корпус спроектирован в САПР SketchUp под точные габариты платы, дисплея и аккумулятора. Предусмотрен защитный бортик для экрана, вынесенная антенна и рельефная маркировка портов.</p>')">
+        <h3>02. 3D-модель</h3><p>Построение корпуса в SketchUp.</p>
+      </div>
+      <div class="card" onclick="openModal('3. Подготовка печати', '<p>Для подготовки модели использовался слайсер Polygon X. Настроены параметры для ABS-пластика: температура, плотность заполнения, поддержки для сложных элементов.</p>')">
+        <h3>03. Слайсинг</h3><p>Настройка печати в Polygon X.</p>
+      </div>
+      <div class="card" onclick="openModal('4. FDM-печать', '<p>Детали напечатаны на 3D-принтере PICASO Designer. ABS-пластик выбран за прочность и теплостойкость. После печати детали отшлифованы.</p>')">
+        <h3>04. FDM-печать</h3><p>Печать на PICASO Designer (ABS).</p>
+      </div>
+      <div class="card" onclick="openModal('5. Сборка', '<p>Выполнена пайка модуля TP4056, DC-DC преобразователя и ESP32. Плата установлена в корпус, подключен АКБ и дисплей. Финальный шаг — прошивка и тестирование.</p>')">
+        <h3>05. Сборка</h3><p>Пайка электроники, монтаж, прошивка.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ГАЛЕРЕЯ -->
+  <section id="gallery" class="page-section">
+    <div class="section-head">
+      <h2 class="section-title">Фото<span>галерея</span></h2>
+    </div>
+    <div class="gallery-grid">
+      <figure class="gallery-item"><img src="photo-1.jpg" alt="KA-01"><figcaption>Устройство KA-01 в сборе</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-2.jpg" alt="Плата"><figcaption>Макетная плата и экран</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-3.jpg" alt="Питание"><figcaption>Аккумулятор и модули</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-4.jpg" alt="Экран"><figcaption>Live Activity</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-5.jpg" alt="Корпус"><figcaption>Работа в корпусе</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-6.jpg" alt="Настройки"><figcaption>Меню Settings</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-7.jpg" alt="Device"><figcaption>Меню Device</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-8.jpg" alt="Атаки"><figcaption>BLE-режимы</figcaption></figure>
+      <figure class="gallery-item"><img src="photo-9.jpg" alt="Сниффер"><figcaption>Сканеры BLE</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- О ПРОЕКТЕ (ПАСПОРТ) -->
+  <section id="about" class="page-section">
+    <div class="section-head">
+      <h2 class="section-title">О <span>проекте</span></h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p style="color:var(--muted); margin-bottom:15px;">Устройство <b>KA-01</b> — это аппаратный модуль на базе чипа ESP32, интегрированный с цветным TFT-дисплеем и внешней антенной. Специфика управления: экран <b>резистивный</b> — он реагирует на физическое нажатие стилусом, а не на тепло пальца. Устройство работает полностью автономно.</p>
+        <div style="background:rgba(255,84,112,0.1); border-left:4px solid var(--danger); padding:15px; border-radius:8px; margin-top:20px;">
+          <h4 style="color:var(--danger); margin-bottom:5px;">⚖️ Правовые ограничения</h4>
+          <p style="font-size:13px; color:var(--muted);">Разделы «Атаки» (Deauth, Evil Portal и др.) предназначены <b>исключительно для аудита собственных сетей</b> и демонстрации уязвимостей в образовательных целях. Использование во вред чужим сетям преследуется по закону.</p>
+        </div>
+      </div>
       
-      <div class="legal" style="margin: 30px 0 0 0; padding: 20px;">
-        <div class="legal-icon">⚖️</div>
-        <div>
-          <h3 style="font-size: 15px;">Правовые ограничения</h3>
-          <p style="font-size: 13px;">
-            KA-01 предназначен исключительно для пассивного мониторинга. Запрещено использование 
-            для деаутентификации и несанкционированного доступа. Испытания проводятся только 
-            на собственных сетях или с разрешения владельца.
-          </p>
+      <div>
+        <div class="info-card">
+          <h3>Паспорт проекта KA-01</h3>
+          <!-- ТЕКСТ БОЛЬШЕ НЕ СЛИПАЕТСЯ -->
+          <div class="info-row"><span class="k">Автор</span><span class="v">Кузьмин Артемий</span></div>
+          <div class="info-row"><span class="k">Модель</span><span class="v" style="color:var(--accent)">KA-01</span></div>
+          <div class="info-row"><span class="k">Платформа</span><span class="v">ESP32-WROOM-32U</span></div>
+          <div class="info-row"><span class="k">Корпус</span><span class="v">ABS-пластик (FDM)</span></div>
+          
+          <div class="qr-box">
+            <p>Ссылка на сайт проекта:</p>
+            <a href="https://mitproro.github.io/ka01-site/" target="_blank" class="link">https://mitproro.github.io/ka01-site/</a>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://mitproro.github.io/ka01-site/&color=000000&bgcolor=ffffff" alt="QR">
+            <p>Наведи камеру телефона</p>
+          </div>
+
+          <h3 style="margin-top:20px;">Контакты</h3>
+          <div style="font-size:14px; line-height:2;">
+            <div>Email: <a href="mailto:mitproro12@mail.ru" style="color:var(--accent);">mitproro12@mail.ru</a></div>
+            <div>Telegram: <a href="https://t.me/mitproro" style="color:var(--accent);">@mitproro</a></div>
+          </div>
         </div>
       </div>
     </div>
-    
-    <div>
-      <div class="info-card reveal delay-1">
-        <h3>Паспорт проекта KA-01</h3>
-        <div class="info-row"><span class="k">Автор</span><span class="v">Кузьмин Артемий</span></div>
-        <div class="info-row"><span class="k">Модель</span><span class="v" style="color:var(--accent)">KA-01</span></div>
-        <div class="info-row"><span class="k">Платформа</span><span class="v">ESP32-WROOM-32U</span></div>
-        <div class="info-row"><span class="k">Корпус</span><span class="v">ABS-пластик (FDM)</span></div>
-        
-        <!-- Contacts & QR -->
-        <div class="qr-box">
-          <p>Ссылка на сайт проекта:</p>
-          <a href="https://mitproro.github.io/ka01-site/" target="_blank" class="link">https://mitproro.github.io/ka01-site/</a>
-          
-          <!-- QR Code Generation via API -->
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://mitproro.github.io/ka01-site/&color=000000&bgcolor=ffffff" alt="QR Code KA-01">
-          
-          <p>Наведи камеру телефона,<br>чтобы открыть сайт KA-01</p>
-        </div>
-        
-        <h3 style="margin-top: 25px;">Обратная связь</h3>
-        <ul class="contact-list">
-          <li><span>Email:</span> <a href="mailto:mitproro12@mail.ru">mitproro12@mail.ru</a></li>
-          <li><span>Telegram:</span> <a href="https://t.me/mitproro" target="_blank">@mitproro</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
 
-<footer>
-  <a href="#" class="logo"><div class="logo-dot"></div> KA-01</a>
-  <div class="foot-mid">Портативный анализатор беспроводных сетей KA-01</div>
-  <div>© 2026 · Кузьмин Артемий</div>
-</footer>
+</main>
 
-<!-- MODAL POPUP -->
+<!-- МОДАЛЬНОЕ ОКНО -->
 <div class="modal-overlay" id="modal">
   <div class="modal-content">
     <button class="modal-close" onclick="closeModal()">&times;</button>
     <h3 id="modalTitle">Заголовок</h3>
-    <p id="modalDesc">Описание...</p>
+    <div id="modalDesc" style="font-size:15px; line-height:1.7; color:var(--muted);"></div>
   </div>
 </div>
 
 <script>
-  // ---------- PROGRESS BAR & NAV ----------
-  const progress = document.getElementById('progress');
-  const nav = document.getElementById('nav');
+  // ================= 1. ЛОГИКА SIDEBAR (GMAIL) =================
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const topbar = document.getElementById('topbar');
+  const mainContent = document.getElementById('mainContent');
+  const menuBtn = document.getElementById('menuBtn');
   
-  function onScroll(){
-    const h = document.documentElement;
-    const scrolled = h.scrollTop;
-    const total = h.scrollHeight - h.clientHeight;
-    progress.style.width = (total > 0 ? (scrolled / total) * 100 : 0) + '%';
-    nav.classList.toggle('scrolled', scrolled > 20);
+  let isSidebarOpen = false;
+  
+  // На компьютере меню открыто по умолчанию
+  if (window.innerWidth >= 1024) {
+    openSidebar();
   }
-  window.addEventListener('scroll', onScroll, {passive:true});
-  onScroll();
 
-  // ---------- MOBILE MENU ----------
-  const burger = document.getElementById('burger');
-  const navLinks = document.getElementById('navLinks');
-  burger.addEventListener('click', () => {
-    burger.classList.toggle('open');
-    navLinks.classList.toggle('open');
-  });
-  navLinks.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => {
-      burger.classList.remove('open');
-      navLinks.classList.remove('open');
-    });
+  menuBtn.addEventListener('click', () => {
+    if (isSidebarOpen) closeSidebar();
+    else openSidebar();
   });
 
-  // ---------- REVEAL ----------
-  const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting){
-        e.target.classList.add('visible');
-        revealObserver.unobserve(e.target);
-      }
-    });
-  }, {threshold:0.1});
-  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  overlay.addEventListener('click', closeSidebar);
 
-  // ---------- MODAL LOGIC (INTERACTIVE PROCESS) ----------
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('show');
+    topbar.classList.add('shifted');
+    mainContent.classList.add('shifted');
+    isSidebarOpen = true;
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+    topbar.classList.remove('shifted');
+    mainContent.classList.remove('shifted');
+    isSidebarOpen = false;
+  }
+
+  // ================= 2. SPA НАВИГАЦИЯ (СМЕНА СТРАНИЦ) =================
+  function navTo(pageId, element) {
+    // Скрываем все страницы
+    document.querySelectorAll('.page-section').forEach(sec => {
+      sec.classList.remove('active');
+    });
+    // Показываем нужную
+    document.getElementById(pageId).classList.add('active');
+    
+    // Меняем активный класс в меню
+    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+    if(element) element.classList.add('active');
+
+    // На мобильных закрываем меню после клика
+    if (window.innerWidth < 1024) {
+      closeSidebar();
+    }
+    
+    // Скролл наверх
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ================= 3. МОДАЛЬНЫЕ ОКНА =================
   const modal = document.getElementById('modal');
   const modalTitle = document.getElementById('modalTitle');
   const modalDesc = document.getElementById('modalDesc');
 
-  function openModal(title, desc) {
+  function openModal(title, htmlContent) {
     modalTitle.textContent = title;
-    modalDesc.textContent = desc;
+    modalDesc.innerHTML = htmlContent;
     modal.classList.add('active');
   }
 
@@ -842,10 +536,21 @@
     modal.classList.remove('active');
   }
 
-  // Close modal on click outside
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
   });
+
+  // ================= 4. TOAST (ПЛАШКА) =================
+  const toast = document.getElementById('refreshToast');
+  
+  // Показываем через 3 секунды
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 3000);
+
+  function closeToast() {
+    toast.classList.remove('show');
+  }
 </script>
 </body>
 </html>
