@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080A0E">
+  <title>KA-01 — Портативный анализатор беспроводных сетей</title>
+  <meta name="description" content="KA-01 — автономный портативный аудитор Wi-Fi и Bluetooth сетей на базе ESP32. Создан для образовательных целей и защиты собственных сетей.">
+  <meta property="og:title" content="KA-01 — Карманный аудитор сети">
+  <meta property="og:description" content="Устройство для пассивного мониторинга радиоэфира. Собственная разработка, 3D-печать и пайка.">
+  <meta property="og:image" content="https://mitproro.github.io/ka01-site/photo-1.jpg">
+  <meta property="og:url" content="https://mitproro.github.io/ka01-site/">
+  <meta property="og:type" content="website">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080A0E;
+      --bg-soft: #0D1118;
+      --panel: rgba(17, 22, 32, .78);
+      --panel-solid: #111620;
+      --panel-hover: #171e2a;
+      --line: rgba(177, 195, 220, .14);
+      --text: #F1F5FB;
+      --muted: #929EAF;
+      --cyan: #00E5FF;
+      --purple: #7B61FF;
+      --green: #98FFCB;
+      --warning: #FFCC75;
+      --radius: 22px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .38);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 73% 0%, rgba(123,97,255,.12), transparent 36rem),
+        radial-gradient(ellipse at 4% 35%, rgba(0,229,255,.07), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font: 15px/1.65 var(--sans);
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .13;
+      background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+    a { color: inherit; text-decoration: none; }
+    button { color: inherit; font: inherit; }
+    img, svg { max-width: 100%; }
+    ::selection { background: rgba(0,229,255,.25); }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+    .muted { color: var(--muted); }
+    .mono { font-family: var(--mono); }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px;
+      color: var(--cyan); font: 700 11px/1.4 var(--mono);
+      letter-spacing: .14em; text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 14px var(--cyan); }
+    .section { padding: 100px 0; }
+    .section-head { max-width: 720px; margin-bottom: 34px; }
+    .section-head h2 { margin: 10px 0 12px; font-size: clamp(30px, 5vw, 49px); line-height: 1.08; letter-spacing: -.045em; }
+    .section-head p { color: var(--muted); margin: 0; }
+    .gradient-text { color: var(--cyan); background: linear-gradient(100deg, var(--cyan), #A698FF); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .glass {
+      background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.018));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    /* Navigation */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8,10,14,.78);
+      backdrop-filter: blur(20px);
+    }
+    .nav {
+      min-height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 22px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 850; letter-spacing: -.04em; }
+    .brand-mark {
+      width: 34px; height: 34px; display: grid; place-items: center;
+      border: 1px solid rgba(0,229,255,.45); border-radius: 10px;
+      color: var(--cyan); font: 800 13px var(--mono);
+      box-shadow: inset 0 0 20px rgba(0,229,255,.08), 0 0 20px rgba(0,229,255,.08);
+    }
+    .nav-links { display: flex; align-items: center; gap: 22px; color: var(--muted); font-size: 13px; }
+    .nav-links a:hover, .nav-links a:focus-visible { color: var(--cyan); }
+    .nav-cta {
+      padding: 10px 15px; border: 1px solid rgba(0,229,255,.35);
+      border-radius: 12px; color: var(--cyan); font-weight: 700; font-size: 13px;
+    }
+    .menu-toggle { display: none; border: 1px solid var(--line); background: var(--panel-solid); border-radius: 10px; padding: 9px 12px; cursor: pointer; }
+
+    /* Hero */
+    .hero { padding: 70px 0 55px; min-height: 650px; display: grid; align-items: center; }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 48px; }
+    .hero h1 { max-width: 680px; margin: 17px 0; font-size: clamp(42px, 6vw, 76px); line-height: .99; letter-spacing: -.065em; }
+    .hero-copy { max-width: 590px; color: var(--muted); font-size: 16px; }
+    .hero-copy b { color: var(--text); }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+    .btn {
+      min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      padding: 12px 18px; border: 1px solid transparent; border-radius: 13px;
+      background: var(--cyan); color: #061014; font-weight: 800; cursor: pointer;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,229,255,.18); }
+    .btn.secondary { color: var(--text); background: rgba(255,255,255,.035); border-color: var(--line); }
+    .btn.secondary:hover { border-color: rgba(0,229,255,.5); color: var(--cyan); }
+    .hero-note { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .pill { padding: 7px 10px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); font: 11px var(--mono); }
+    .hero-visual { position: relative; min-height: 470px; display: grid; place-items: center; }
+    .orb {
+      position: absolute; width: 380px; height: 380px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,229,255,.14), rgba(123,97,255,.09) 42%, transparent 70%);
+      filter: blur(12px);
+    }
+    .device-wrap { position: relative; width: min(330px, 80%); transform: rotate(-4deg); transition: transform .5s; }
+    .device-wrap:hover { transform: rotate(0) translateY(-6px); }
+    .device {
+      position: relative; width: 100%; padding: 18px;
+      border-radius: 32px; border: 1px solid rgba(190,210,230,.28);
+      background: linear-gradient(145deg, #222935, #0c1118 45%, #171c24);
+      box-shadow: 0 35px 90px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.14);
+    }
+    .device::before {
+      content: ""; position: absolute; inset: 8px; border-radius: 25px; border: 1px solid rgba(255,255,255,.045); pointer-events: none;
+    }
+    .device-top { display: flex; justify-content: space-between; align-items: center; padding: 2px 5px 12px; color: #778396; font: 9px var(--mono); letter-spacing: .12em; }
+    .antenna { position: absolute; width: 7px; height: 84px; top: -75px; right: 39px; border-radius: 5px; background: linear-gradient(90deg,#353d49,#929ba7,#252b34); transform: rotate(8deg); box-shadow: 0 0 12px rgba(0,229,255,.15); }
+    .antenna::after { content: ""; position: absolute; top: -11px; left: -3px; width: 13px; height: 14px; border-radius: 50% 50% 35% 35%; background: #8e99a6; }
+    .screen {
+      position: relative; min-height: 245px; overflow: hidden; padding: 15px;
+      border-radius: 9px; background: #08131a; border: 1px solid rgba(0,229,255,.5);
+      color: #b8faff; box-shadow: inset 0 0 24px rgba(0,229,255,.08), 0 0 18px rgba(0,229,255,.08);
+      font: 10px/1.5 var(--mono);
+    }
+    .screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .14; background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,229,255,.14) 4px); }
+    .screen-head { display: flex; justify-content: space-between; color: var(--cyan); border-bottom: 1px solid rgba(0,229,255,.2); padding-bottom: 8px; margin-bottom: 9px; }
+    .screen-line { display: flex; justify-content: space-between; padding: 3px 0; }
+    .screen-line span:last-child { color: #91a4b5; }
+    .screen-chart { height: 49px; display: flex; align-items: end; gap: 5px; margin-top: 8px; padding: 0 4px 4px; border-bottom: 1px solid rgba(0,229,255,.2); }
+    .screen-chart i { flex: 1; height: var(--h); background: linear-gradient(to top, var(--purple), var(--cyan)); border-radius: 3px 3px 0 0; opacity: .8; }
+    .device-buttons { display: flex; justify-content: center; gap: 16px; padding: 16px 0 4px; }
+    .device-key { width: 34px; height: 25px; border-radius: 9px; border: 1px solid #56606e; background: linear-gradient(#353e4a,#151a21); box-shadow: 0 4px 6px #05070a; }
+    .device-key.round { width: 26px; border-radius: 50%; }
+    .device-caption { text-align: center; margin-top: 17px; color: var(--muted); font: 10px var(--mono); letter-spacing: .12em; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .stat { padding: 20px; border-radius: 18px; }
+    .stat strong { display: block; color: var(--cyan); font: 750 clamp(19px, 2.5vw, 27px) var(--mono); letter-spacing: -.05em; }
+    .stat span { display: block; color: var(--muted); font-size: 12px; margin-top: 5px; }
+
+    /* Simulator */
+    .sim-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 22px; align-items: stretch; }
+    .sim-info, .simulator { padding: 26px; border-radius: var(--radius); }
+    .sim-info h3 { font-size: 23px; margin: 10px 0; }
+    .sim-info p { color: var(--muted); }
+    .sim-status { display: flex; align-items: center; gap: 9px; margin-top: 18px; font: 11px var(--mono); color: var(--green); }
+    .sim-status::before { content: ""; width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 12px var(--green); }
+    .simulator { display: grid; grid-template-columns: 1fr 165px; gap: 15px; background: linear-gradient(145deg,rgba(24,31,44,.9),rgba(13,17,24,.88)); }
+    .sim-screen { min-height: 270px; border-radius: 13px; padding: 18px; background: #07131a; border: 1px solid rgba(0,229,255,.35); font: 12px/1.7 var(--mono); color: #b7faff; box-shadow: inset 0 0 30px rgba(0,229,255,.07); }
+    .sim-screen h4 { margin: 0 0 12px; color: var(--cyan); font-size: 13px; }
+    .sim-screen p { margin: 7px 0; color: #91a7b0; }
+    .sim-screen .live { color: var(--green); }
+    .sim-controls { display: flex; flex-direction: column; gap: 8px; }
+    .sim-tab { text-align: left; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.025); border: 1px solid var(--line); color: var(--muted); cursor: pointer; font: 11px var(--mono); transition: .2s; }
+    .sim-tab:hover, .sim-tab.active { color: var(--cyan); border-color: rgba(0,229,255,.4); background: rgba(0,229,255,.07); }
+    .sim-hint { color: var(--muted); font-size: 11px; margin-top: auto; }
+
+    /* Bento / features */
+    .feature-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 13px; }
+    .feature-card { grid-column: span 2; min-height: 210px; padding: 22px; border-radius: 20px; }
+    .feature-card.wide { grid-column: span 3; }
+    .feature-card .icon { font-size: 22px; }
+    .feature-card h3 { margin: 12px 0 8px; font-size: 17px; }
+    .feature-card p { color: var(--muted); font-size: 13px; margin: 0; }
+    .feature-card:hover { border-color: rgba(0,229,255,.28); transform: translateY(-3px); transition: .2s; }
+    .feature-card { transition: .2s; }
+
+    .bento { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
+    .bento-card { padding: 21px; border-radius: 19px; }
+    .bento-card.span2 { grid-column: span 2; }
+    .bento-card.span4 { grid-column: span 4; }
+    .bento-label { color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .12em; }
+    .bento-value { margin: 9px 0 4px; font-size: 21px; font-weight: 750; letter-spacing: -.03em; }
+    .bento-sub { color: var(--muted); font-size: 12px; }
+    .bom-row { display: flex; justify-content: space-between; gap: 15px; padding: 9px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    .bom-row b { color: var(--text); white-space: nowrap; }
+    .bom-total { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; color: var(--text); font-weight: 800; }
+    .bom-total strong { color: var(--cyan); font: 800 22px var(--mono); }
+
+    /* Timeline */
+    .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; position: relative; }
+    .timeline-card { position: relative; padding: 24px; border-radius: 20px; }
+    .timeline-num { color: var(--cyan); font: 12px var(--mono); }
+    .timeline-card h3 { margin: 10px 0; font-size: 18px; }
+    .timeline-card p { color: var(--muted); font-size: 13px; margin: 0; }
+
+    /* Gallery */
+    .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
+    .gallery-card { overflow: hidden; border-radius: 18px; min-height: 230px; }
+    .gallery-art { height: 175px; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 50%, rgba(0,229,255,.09), transparent 60%), #0c1118; }
+    .gallery-art img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-art svg { width: 82%; height: 82%; }
+    .gallery-card figcaption { padding: 13px 15px; font-size: 12px; color: var(--muted); }
+    .gallery-card figcaption b { display: block; color: var(--text); font-size: 13px; }
+
+    /* Legal / FAQ */
+    .legal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .legal-card { padding: 23px; border-radius: 19px; }
+    .legal-card.full { grid-column: 1 / -1; }
+    .legal-card h3 { margin: 0 0 11px; font-size: 17px; }
+    .legal-card p, .legal-card li { color: var(--muted); font-size: 13px; }
+    .legal-card ul { padding-left: 19px; }
+    .legal-card li { margin: 7px 0; }
+    .accordion { display: grid; gap: 9px; }
+    details { border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.025); overflow: hidden; }
+    summary { cursor: pointer; list-style: none; padding: 17px 19px; font-weight: 700; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; float: right; color: var(--cyan); font: 20px var(--mono); line-height: 1; }
+    details[open] summary::after { content: "−"; }
+    .detail-body { padding: 0 19px 17px; color: var(--muted); font-size: 13px; }
+    .detail-body p { margin: 8px 0; }
+
+    /* About/footer */
+    .about-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 15px; }
+    .about-card { padding: 26px; border-radius: 20px; }
+    .about-card h3 { margin-top: 0; }
+    .about-card p { color: var(--muted); }
+    .contact-links { display: grid; gap: 9px; margin-top: 17px; }
+    .contact-link { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); }
+    .contact-link:hover { border-color: rgba(0,229,255,.4); color: var(--cyan); }
+    .contact-link span:last-child { color: var(--muted); font: 11px var(--mono); }
+    footer { padding: 25px 0 35px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+    .footer-inner a:hover { color: var(--cyan); }
+    #scrollTop {
+      position: fixed; right: 20px; bottom: 20px; z-index: 20;
+      width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--line);
+      background: rgba(17,22,32,.88); color: var(--cyan); cursor: pointer;
+      opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s;
+    }
+    #scrollTop.show { opacity: 1; pointer-events: auto; transform: none; }
+    .notice { padding: 14px 16px; border-left: 2px solid var(--warning); background: rgba(255,204,117,.06); color: var(--warning); border-radius: 0 12px 12px 0; font-size: 12px; }
+
+    @media (max-width: 850px) {
+      .nav-links { display: none; position: absolute; top: 70px; left: 0; right: 0; padding: 18px 20px; background: rgba(8,10,14,.97); border-bottom: 1px solid var(--line); flex-direction: column; align-items: stretch; }
+      .nav-links.open { display: flex; }
+      .menu-toggle { display: inline-flex; }
+      .nav-cta { display: none; }
+      .hero-grid, .sim-grid, .about-grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 50px; }
+      .hero-visual { min-height: 410px; }
+      .simulator { grid-template-columns: 1fr; }
+      .sim-controls { display: grid; grid-template-columns: repeat(5, 1fr); }
+      .sim-tab { text-align: center; padding-inline: 6px; }
+      .sim-hint { grid-column: 1 / -1; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+      .timeline { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .wrap { width: min(100% - 28px, 1160px); }
+      .section { padding: 70px 0; }
+      .hero h1 { font-size: clamp(41px, 13vw, 62px); }
+      .hero-copy { font-size: 14px; }
+      .hero-visual { min-height: 350px; }
+      .device-wrap { width: min(285px, 78%); }
+      .screen { min-height: 220px; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature-card, .feature-card.wide { grid-column: auto; min-height: unset; }
+      .bento { grid-template-columns: repeat(2, 1fr); }
+      .bento-card.span2, .bento-card.span4 { grid-column: span 2; }
+      .legal-grid { grid-template-columns: 1fr; }
+      .legal-card.full { grid-column: auto; }
+      .gallery { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .gallery-art { height: 135px; }
+      .gallery-card { min-height: 190px; }
+      .sim-info, .simulator { padding: 17px; }
+      .sim-tab { font-size: 9px; }
+      .contact-link { font-size: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <nav class="nav wrap" aria-label="Основная навигация">
+      <a class="brand" href="#home" aria-label="KA-01 — на главную"><span class="brand-mark">KA</span><span>KA-01</span></a>
+      <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="navLinks">Меню</button>
+      <div class="nav-links" id="navLinks">
+        <a href="#simulator">Симулятор</a>
+        <a href="#features">Функционал</a>
+        <a href="#specs">Характеристики</a>
+        <a href="#story">История</a>
+        <a href="#gallery">Галерея</a>
+        <a href="#safety">Безопасность</a>
+        <a href="#faq">FAQ</a>
+        <a href="#about">О проекте</a>
+      </div>
+      <a class="nav-cta" href="#about">Связаться ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Проект ВсОШ · технология</span>
+          <h1>Карманный <span class="gradient-text">аудитор</span> сети</h1>
+          <p class="hero-copy">Представьте рентген для Wi-Fi. KA-01 видит невидимые волны, находит свободные каналы и скрытые устройства. Создан с нуля для образовательных целей. Название расшифровывается: <b>К</b>узьмин <b>А</b>ртемий, устройство <b>01</b>.</p>
+          <div class="actions">
+            <a class="btn" href="#features">Возможности <span aria-hidden="true">↘</span></a>
+            <a class="btn secondary" href="#about">Связаться</a>
+          </div>
+          <div class="hero-note">
+            <span class="pill">ESP32-WROOM-32U</span>
+            <span class="pill">Wi-Fi + BLE</span>
+            <span class="pill">Автономное устройство</span>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="Стилизованный макет устройства KA-01">
+          <div class="orb"></div>
+          <div class="device-wrap">
+            <div class="antenna"></div>
+            <div class="device">
+              <div class="device-top"><span>KA-01 / PORTABLE</span><span>● POWER</span></div>
+              <div class="screen">
+                <div class="screen-head"><span>KA-01 // SYSTEM</span><span>2.4G</span></div>
+                <div class="screen-line"><span>&gt; WiFi Analyzer</span><span>READY</span></div>
+                <div class="screen-line"><span>&gt; BLE Scan</span><span>ACTIVE</span></div>
+                <div class="screen-line"><span>CH 01 — RSSI</span><span>-42 dBm</span></div>
+                <div class="screen-line"><span>NETWORKS</span><span>07 FOUND</span></div>
+                <div class="screen-chart" aria-hidden="true">
+                  <i style="--h:34%"></i><i style="--h:57%"></i><i style="--h:43%"></i><i style="--h:80%"></i><i style="--h:61%"></i><i style="--h:92%"></i><i style="--h:48%"></i><i style="--h:70%"></i><i style="--h:37%"></i><i style="--h:60%"></i>
+                </div>
+                <div class="screen-line"><span>BATTERY</span><span>86%</span></div>
+              </div>
+              <div class="device-buttons"><span class="device-key"></span><span class="device-key round"></span><span class="device-key"></span></div>
+            </div>
+            <div class="device-caption">CONCEPT / CSS DEVICE RENDER</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap stats" aria-label="Ключевые показатели">
+      <div class="stat glass"><strong>2.4 GHz</strong><span>Wi-Fi &amp; BLE аудит</span></div>
+      <div class="stat glass"><strong>≈ 2 550 ₽</strong><span>Себестоимость</span></div>
+      <div class="stat glass"><strong>4–5 ч</strong><span>Автономность</span></div>
+      <div class="stat glass"><strong>ВсОШ</strong><span>Олимпиадный проект</span></div>
+    </div>
+
+    <section class="section" id="simulator">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Интерактивный макет</span>
+          <h2>Симулятор <span class="gradient-text">KA-01</span></h2>
+          <p>CSS-макет устройства с интерактивными разделами экранного интерфейса. Это демонстрационный симулятор интерфейса, а не подключение к реальному радиооборудованию.</p>
+        </div>
+        <div class="sim-grid">
+          <div class="sim-info glass">
+            <span class="eyebrow">DEVICE / 001</span>
+            <h3>Карманная лаборатория радиоэфира</h3>
+            <p>В макете показаны экран 2.8", меню Recon, WiFi, Bluetooth, Device и Reboot. Выбери пункт, чтобы посмотреть демонстрационный экран соответствующего раздела.</p>
+            <div class="sim-status">OFFLINE DEMO · устройство не подключено</div>
+          </div>
+          <div class="simulator glass">
+            <div class="sim-screen" id="simScreen" aria-live="polite">
+              <h4>KA-01 // RECON</h4>
+              <p class="live">● ПАССИВНОЕ СКАНИРОВАНИЕ</p>
+              <p>Wi-Fi networks: 07</p>
+              <p>BLE devices: 04</p>
+              <p>Channel: 06 / RSSI: -42 dBm</p>
+              <p>Режим демонстрации интерфейса</p>
+            </div>
+            <div class="sim-controls" role="tablist" aria-label="Разделы симулятора">
+              <button class="sim-tab active" role="tab" aria-selected="true" data-screen="recon">Recon</button>
+              <button class="sim-tab" role="tab" aria-selected="false" data-screen="wifi">WiFi</button>
+              <button class="sim-tab" role="tab" aria-selected="false" data-screen="bluetooth">Bluetooth</button>
+              <button class="sim-tab" role="tab" aria-selected="false" data-screen="device">Device</button>
+              <button class="sim-tab" role="tab" aria-selected="false" data-screen="reboot">Reboot</button>
+              <span class="sim-hint">Экран 2.8" · 240 × 320</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Возможности</span>
+          <h2>Изучаем <span class="gradient-text">функционал</span></h2>
+          <p>Нажмите на любой пункт ниже, чтобы раскрыть подробное описание функции.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card glass">
+            <span class="icon">📡</span><h3>Recon (Разведка) и Пассивный перехват</h3>
+            <p>Мониторинг эфира, обнаружение сетей и оценка уровня сигнала в образовательных целях.</p>
+          </article>
+          <article class="feature-card glass">
+            <span class="icon">📊</span><h3>Аналитика WiFi</h3>
+            <p>Анализ каналов и отображение сетевой активности.</p>
+          </article>
+          <article class="feature-card glass">
+            <span class="icon">🛡️</span><h3>Сканеры LAN</h3>
+            <p>Обзор устройств в собственной локальной сети.</p>
+          </article>
+          <article class="feature-card wide glass">
+            <span class="icon">🧪</span><h3>Стресс-тестирование</h3>
+            <p>Учебные проверки устойчивости только на собственном оборудовании и специально подготовленных стендах.</p>
+          </article>
+          <article class="feature-card wide glass">
+            <span class="icon">🔵</span><h3>Аудит BLE</h3>
+            <p>Пассивное наблюдение за Bluetooth Low Energy и изучение принципов работы беспроводных устройств.</p>
+          </article>
+        </div>
+        <div class="accordion" style="margin-top:16px">
+          <details>
+            <summary>📡 Recon (Разведка) и Пассивный перехват</summary>
+            <div class="detail-body">
+              <p><b>Start WiFi/BLE:</b> Фоновый сбор MAC-адресов без отправки ответных сигналов.</p>
+              <p><b>Probe Request Sniff:</b> Видит список сетей, которые ищут смартфоны вокруг.</p>
+              <p><b>Deauth Sniff:</b> Режим радио-обороны. Сигнализирует, если кто-то пытается глушить эфир.</p>
+            </div>
+          </details>
+          <details>
+            <summary>📊 Аналитика WiFi и Спектр</summary>
+            <div class="detail-body">
+              <p><b>Channel Analyzer:</b> График загруженности всех 14 каналов. Показывает, где «пробка».</p>
+              <p><b>Packet Monitor:</b> Осциллограф сетевой активности.</p>
+              <p><b>Raw Capture:</b> Сохранение дампов трафика в .pcap для анализа в Wireshark.</p>
+            </div>
+          </details>
+          <details>
+            <summary>🛡️ Сканеры уязвимостей (LAN)</summary>
+            <div class="detail-body">
+              <p><b>Ping/ARP Scan:</b> Показывает все подключенные к роутеру устройства и их IP/MAC.</p>
+              <p><b>Port Scan:</b> Поиск открытых портов уязвимых устройств.</p>
+            </div>
+          </details>
+          <details>
+            <summary>🛡 Стресс-тестирование Wi-Fi (Аудит устойчивости)</summary>
+            <div class="detail-body">
+              <div class="notice">⚠ Исключительно для проверки собственных сетей и демонстрации на стендах!</div>
+              <p><b>Beacon Spam:</b> генерация тестовых маяков (SSID) для проверки стабильности работы клиентских устройств при высокой загруженности эфира.</p>
+              <p><b>Deauth Flood:</b> имитация разрыва соединения для проверки устойчивости камер видеонаблюдения и IoT-устройств к атакам деаутентификации.</p>
+              <p><b>Evil Portal:</b> локальная демонстрационная страница (Captive Portal) для наглядного изучения рисков подключения к открытым точкам доступа.</p>
+            </div>
+          </details>
+          <details>
+            <summary>🔵 Аудит Bluetooth и BLE</summary>
+            <div class="detail-body">
+              <p><b>BLE Advertisement Test (Sour Apple / Swiftpair):</b> генерация тестовых рекламных пакетов BLE для изучения механизмов обработки запросов сопряжения в iOS и Windows.</p>
+              <p><b>Detect Card Skimmer:</b> пассивное сканирование эфира на наличие подозрительных скрытых Bluetooth-модулей.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="specs">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Hardware / BOM</span>
+          <h2>Характеристики и <span class="gradient-text">смета</span></h2>
+          <p>Аппаратная часть, время производства и ориентировочная себестоимость проекта.</p>
+        </div>
+        <div class="bento">
+          <article class="bento-card span2 glass">
+            <div class="bento-label">Процессор и радио</div>
+            <div class="bom-row"><span>MCU</span><b>ESP32-WROOM-32U</b></div>
+            <div class="bom-row"><span>Архитектура</span><b>2x Xtensa LX6, 240 MHz</b></div>
+            <div class="bom-row"><span>Wi-Fi</span><b>802.11 b/g/n (2.4 GHz)</b></div>
+            <div class="bom-row"><span>Bluetooth</span><b>v4.2 BR/EDR + BLE</b></div>
+            <div class="bom-row"><span>Антенна</span><b>Внешняя 2.4 GHz (SMA)</b></div>
+          </article>
+          <article class="bento-card span2 glass">
+            <div class="bento-label">Питание и время</div>
+            <div class="bom-row"><span>Аккумулятор</span><b>Li-Po 3.7V 1100 mAh</b></div>
+            <div class="bom-row"><span>Потребление (актив)</span><b>~220-250 mA</b></div>
+            <div class="bom-row"><span>Время работы</span><b>4-5 часов</b></div>
+            <div class="bom-row"><span>Зарядка</span><b>TP4056 (5V)</b></div>
+            <div class="bom-row"><span>Дисплей</span><b>2.8" TFT 240x320</b></div>
+          </article>
+          <article class="bento-card span4 glass">
+            <div class="bento-label">Эргономика и автономность</div>
+            <div class="bento-value">100–150 м · ABS · 153 г</div>
+            <div class="bento-sub">Дальность приема с внешней SMA-антенной: примерно до 100–150 м на открытой местности и около 50 м в помещении (через стены). Компактный корпус из ABS-пластика (153 г), помещается в карман.</div>
+          </article>
+          <article class="bento-card span2 glass">
+            <div class="bento-label">Скорость и точность</div>
+            <div class="bom-row"><span>Скорость сканирования каналов</span><b>полный проход по 14 каналам за ~20 сек</b></div>
+            <div class="bom-row"><span>Точность определения устройств</span><b>фиксация MAC-адресов и RSSI в реальном времени</b></div>
+            <div class="bom-row"><span>Управление</span><b>резистивный сенсорный экран 2.8" (точная навигация стилусом)</b></div>
+            <div class="bom-row"><span>Время работы от батареи</span><b>4–5 часов активного сканирования</b></div>
+          </article>
+          <article class="bento-card span2 glass">
+            <div class="bento-label">Время производства</div>
+            <div class="bom-row"><span>3D-печать корпуса</span><b>до 10 часов</b></div>
+            <div class="bom-row"><span>Сборка и пайка электроники</span><b>до 24 часов</b></div>
+            <div class="bom-row"><span>Настройка и прошивка</span><b>до 2 часов</b></div>
+          </article>
+          <article class="bento-card span4 glass">
+            <div class="bento-label">Смета проекта (BOM)</div>
+            <div class="bom-row"><span>Микроконтроллер ESP32-WROOM-32U</span><b>~600 ₽</b></div>
+            <div class="bom-row"><span>Экран 2.8" TFT + Тач</span><b>~800 ₽</b></div>
+            <div class="bom-row"><span>Аккумулятор + TP4056 + DC-DC</span><b>~500 ₽</b></div>
+            <div class="bom-row"><span>Антенна + Пигтейл</span><b>~300 ₽</b></div>
+            <div class="bom-row"><span>ABS-пластик, макетка, провода</span><b>~350 ₽</b></div>
+            <div class="bom-total"><span>Итого себестоимость:</span><strong>≈ 2 550 ₽</strong></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="story">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Процесс разработки</span>
+          <h2>История <span class="gradient-text">создания</span></h2>
+        </div>
+        <div class="timeline">
+          <article class="timeline-card glass">
+            <span class="timeline-num">01 / ИДЕЯ</span>
+            <h3>💡 1. Начало пути: M5Stick C2+ и ВсОШ</h3>
+            <p>Идея началась с покупки готового устройства M5Stick C2+. Но в процессе использования я понял, что оно имеет ряд ограничений: маленький экран, закрытая архитектура и невозможность свободно дорабатывать код и "железо".<br><br>Так родилась цель: создать собственное устройство с нуля, которое исключит все эти минусы. А чтобы проверить свои силы, я решил заявить этот проект на Всероссийскую олимпиаду школьников (ВсОШ) по технологии.</p>
+          </article>
+          <article class="timeline-card glass">
+            <span class="timeline-num">02 / ПРОЕКТИРОВАНИЕ</span>
+            <h3>📐 2. Трудности проектирования и 3D-печати</h3>
+            <p>Было действительно сложно делать все с нуля, без готовых чертежей. Первая 3D-печать корпуса пошла не по плану: размеры внутренних креплений не подошли под плату, и пришлось полностью переделывать 3D-модель в SketchUp.<br><br>После корректировки модели я нарезал ее в слайсере Polygon X и напечатал на PICASO Designer из ABS-пластика. Внешняя антенна была вынесена наружу для лучшего приема. Но я справился, и результат того стоил!</p>
+          </article>
+          <article class="timeline-card glass">
+            <span class="timeline-num">03 / СБОРКА</span>
+            <h3>🔌 3. Сборка и прошивка (Финал)</h3>
+            <p>Пайка электроники: ESP32, модуль заряда TP4056, повышающий преобразователь. Установка дисплея и калибровка резистивного тачскрина под стилус. Прошивка ESP32 Marauder и тестирование всех функций в полевых условиях. Это был долгий путь, но я смог довести проект до конца.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="gallery">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Визуальные материалы</span>
+          <h2>Галерея <span class="gradient-text">проекта</span></h2>
+          <p>Фотография готового устройства и встроенные SVG-чертежи-концепты. Фотография берётся из файла photo-1.jpg рядом с index.html.</p>
+        </div>
+        <div class="gallery">
+          <figure class="gallery-card glass">
+            <div class="gallery-art"><img src="photo-1.jpg" alt="KA-01 — готовое устройство" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg style="display:none" viewBox="0 0 320 180" aria-hidden="true"><rect x="104" y="20" width="112" height="140" rx="17" fill="#141c26" stroke="#00e5ff"/><rect x="118" y="42" width="84" height="76" rx="5" fill="#07131a" stroke="#00e5ff"/><path d="M130 98l14-18 10 10 16-27 18 35" fill="none" stroke="#00e5ff" stroke-width="3"/><path d="M186 23V6" stroke="#aab4c1" stroke-width="5"/><circle cx="160" cy="137" r="6" fill="#7b61ff"/></svg></div>
+            <figcaption><b>KA-01 (Готовое устройство)</b>Фотография устройства</figcaption>
+          </figure>
+          <figure class="gallery-card glass">
+            <div class="gallery-art">
+              <svg viewBox="0 0 320 180" role="img" aria-label="SVG-чертёж корпуса KA-01">
+                <g fill="none" stroke="#00e5ff" stroke-width="1.5"><rect x="92" y="22" width="136" height="136" rx="17"/><rect x="109" y="42" width="102" height="78" rx="5"/><circle cx="160" cy="140" r="8"/><path d="M70 22h-18M70 158H52M250 22h18M250 158h18M52 22v136M268 22v136"/></g>
+                <g fill="#9aa7b7" font-family="monospace" font-size="10"><text x="120" y="16">FRONT VIEW</text><text x="34" y="94">153 mm*</text><text x="133" y="72">2.8" TFT</text><text x="120" y="174">*SCHEMATIC</text></g>
+              </svg>
+            </div>
+            <figcaption><b>Корпус · чертёж</b>SVG-эскиз лицевой панели</figcaption>
+          </figure>
+          <figure class="gallery-card glass">
+            <div class="gallery-art">
+              <svg viewBox="0 0 320 180" role="img" aria-label="SVG-чертёж компоновки электроники">
+                <g fill="none" stroke="#7b61ff" stroke-width="2"><rect x="54" y="41" width="212" height="98" rx="12"/><rect x="76" y="61" width="68" height="48" rx="5"/><rect x="158" y="57" width="40" height="32" rx="4"/><rect x="211" y="59" width="34" height="27" rx="4"/><path d="M144 85h14M198 72h13M110 109v15M177 89v23M228 86v27"/></g>
+                <g fill="#00e5ff"><circle cx="91" cy="53" r="3"/><circle cx="129" cy="118" r="3"/><circle cx="249" cy="110" r="3"/></g>
+                <g fill="#9aa7b7" font-family="monospace" font-size="9"><text x="80" y="83">ESP32</text><text x="158" y="102">TP4056</text><text x="209" y="101">DC-DC</text><text x="118" y="155">BOARD LAYOUT / CONCEPT</text></g>
+              </svg>
+            </div>
+            <figcaption><b>Электроника · чертёж</b>SVG-схема компоновки</figcaption>
+          </figure>
+          <figure class="gallery-card glass">
+            <div class="gallery-art">
+              <svg viewBox="0 0 320 180" role="img" aria-label="SVG-чертёж сборки KA-01">
+                <g fill="none" stroke="#00e5ff" stroke-width="1.5"><rect x="105" y="50" width="110" height="90" rx="14"/><rect x="119" y="65" width="82" height="55" rx="4"/><path d="M160 50V18M151 18h18M117 140l-20 18M203 140l20 18M105 87H70M215 87h35"/></g>
+                <g stroke="#7b61ff" stroke-width="1.5" stroke-dasharray="4 4"><path d="M160 18V4M70 87H45M250 87h25"/></g>
+                <g fill="#9aa7b7" font-family="monospace" font-size="9"><text x="128" y="95">DISPLAY</text><text x="130" y="34">SMA ANT.</text><text x="120" y="166">ASSEMBLY CONCEPT</text></g>
+              </svg>
+            </div>
+            <figcaption><b>Сборка · чертёж</b>SVG-схема компонентов корпуса</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="safety">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Ответственное использование</span>
+          <h2>Безопасность и <span class="gradient-text">право</span></h2>
+          <p>Использование устройства строго регламентировано.</p>
+        </div>
+        <div class="legal-grid">
+          <article class="legal-card glass">
+            <h3>🤝 Киберэтика</h3>
+            <p>Данное устройство создано исключительно для <b>образовательных целей</b> и защиты собственных сетей. Мы категорически против использования KA-01 для взлома, создания помех, нарушения приватности или любого вреда другим пользователям.</p>
+            <ul>
+              <li>Не вмешивайтесь в чужие сети без письменного разрешения владельца.</li>
+              <li>Уважайте право на приватность (не собирайте данные посторонних людей).</li>
+              <li>Используйте знания для защиты, а не для атак.</li>
+            </ul>
+          </article>
+          <article class="legal-card glass">
+            <h3>⚠️ Правила безопасного использования</h3>
+            <ul>
+              <li><b>Аккумулятор:</b> Не подвергайте Li-Po аккумулятор нагреву, ударам или проколам. При вздутии — утилизируйте.</li>
+              <li><b>Помехи:</b> Не используйте активные функции (Deauth, Beacon) рядом с больницами, аэропортами и критической инфраструктурой.</li>
+              <li><b>Антенна:</b> Не направляйте антенну на людей длительное время (соблюдайте нормы СанПиН).</li>
+            </ul>
+          </article>
+          <article class="legal-card full glass">
+            <h3>⚖️ Законы РФ</h3>
+            <p><strong>149-ФЗ «Об информации...»:</strong> Регулирует недопустимость неправомерного доступа к информации.</p>
+            <p><strong>152-ФЗ «О персональных данных»:</strong> MAC-адреса устройств могут считаться персональными данными. Сбор чужих MAC-адресов без согласия нарушает этот закон.</p>
+            <p><strong>УК РФ (ст. 272, 273):</strong> Неправомерный доступ к компьютерной информации и создание вредоносных программ влекут уголовную ответственность.</p>
+            <p><strong>КоАП РФ (ст. 13.3, 13.4):</strong> Нарушение правил использования радиоэлектронных средств.</p>
+            <p class="notice">Материалы раздела приведены для общего ознакомления и не являются юридической консультацией. Перед использованием оборудования следует самостоятельно проверить применимые нормы законодательства.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">FAQ</span>
+          <h2>Вопросы и <span class="gradient-text">ответы</span></h2>
+        </div>
+        <div class="accordion">
+          <details>
+            <summary>Законно ли использовать KA-01?</summary>
+            <div class="detail-body"><p>Да, устройство полностью законно, если вы используете его для пассивного мониторинга и аудита <b>собственных сетей</b>. Использование в целях взлома или создания помех чужим сетям преследуется по закону.</p></div>
+          </details>
+          <details>
+            <summary>Может ли устройство взломать мой Wi-Fi?</summary>
+            <div class="detail-body"><p>Нет. Устройство не подбирает пароли "в один клик". Оно может перехватывать хэши (рукопожатия) для последующего анализа их стойкости на ПК, но это требует времени и специальных знаний.</p></div>
+          </details>
+          <details>
+            <summary>Как долго держит батарея?</summary>
+            <div class="detail-body"><p>При непрерывном активном сканировании устройство работает 4-5 часов. В режиме ожидания (с выключенным экраном) — до 10 часов.</p></div>
+          </details>
+          <details>
+            <summary>Можно ли пользоваться на уроках?</summary>
+            <div class="detail-body"><p>Да, KA-01 отлично подходит для демонстрации основ радиочастот и сетевой безопасности на уроках физики и информатики.</p></div>
+          </details>
+          <details>
+            <summary>Можно ли доработать прошивку под себя?</summary>
+            <div class="detail-body"><p>Да! Устройство базируется на открытом коде ESP32 Marauder. Вы можете менять интерфейс, добавлять свои функции или даже писать собственные скрипты для автоматизации.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Авторская разработка</span>
+          <h2>О <span class="gradient-text">проекте</span></h2>
+        </div>
+        <div class="about-grid">
+          <article class="about-card glass">
+            <h3>Привет! Меня зовут Кузьмин Артемий</h3>
+            <p>Привет! Меня зовут <b>Кузьмин Артемий</b>, я ученик 9 «Г» класса. Муниципальное общеобразовательное учреждение «Средняя общеобразовательная школа № 32 имени 177 истребительного авиационного московского полка», г.о. Подольск.</p>
+            <p><b>KA-01</b> — это моя первая серьезная разработка. Устройство спроектировано с нуля: от 3D-модели корпуса до пайки электроники. Я использую его исключительно в образовательных целях: для изучения радиоэфира, аудита собственных сетей и демонстрации уязвимостей.</p>
+            <div class="notice"><b>📄 Документация</b><br>Полная принципиальная схема и 3D-модели доступны для скачивания.</div>
+          </article>
+          <article class="about-card glass">
+            <h3>Паспорт изделия</h3>
+            <div class="bom-row"><span>Автор</span><b>Кузьмин Артемий</b></div>
+            <div class="bom-row"><span>Класс</span><b>9 «Г»</b></div>
+            <div class="bom-row"><span>Школа</span><b>школа № 32 г. Подольск</b></div>
+            <div class="bom-row"><span>Модель</span><b class="gradient-text">KA-01</b></div>
+            <h3 style="margin-top:25px">Связаться со мной</h3>
+            <p>Есть вопросы по сборке, прошивке или участию проекта в олимпиаде? Напишите мне напрямую или подписывайтесь на канал разработки!</p>
+            <div class="contact-links">
+              <a class="contact-link" href="https://t.me/mitproro" target="_blank" rel="noopener noreferrer"><span>Личный Telegram @mitproro</span><span>TELEGRAM ↗</span></a>
+              <a class="contact-link" href="https://t.me/ka_01_tg" target="_blank" rel="noopener noreferrer"><span>Канал KA-01 Project</span><span>[@KA_01_tg] ↗</span></a>
+              <a class="contact-link" href="mailto:mitproro12@mail.ru"><span>Почта: mitproro12@mail.ru</span><span>EMAIL ↗</span></a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>© 2026 KA-01 Project. Создано Кузьминым Артемием.</span>
+      <a href="mailto:mitproro12@mail.ru">Связаться · mitproro12@mail.ru</a>
+      <a href="https://t.me/ka_01_tg" target="_blank" rel="noopener noreferrer">Telegram [@KA_01_tg] ↗</a>
+    </div>
+  </footer>
+
+  <button id="scrollTop" aria-label="Наверх" title="Наверх">↑</button>
+
+  <script>
+    (() => {
+      const menuToggle = document.getElementById('menuToggle');
+      const navLinks = document.getElementById('navLinks');
+
+      menuToggle.addEventListener('click', () => {
+        const isOpen = navLinks.classList.toggle('open');
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('open');
+          menuToggle.setAttribute('aria-expanded', 'false');
+        });
+      });
+
+      const simulatorScreens = {
+        recon: {
+          title: 'KA-01 // RECON',
+          lines: [
+            ['● ПАССИВНОЕ СКАНИРОВАНИЕ', 'live'],
+            ['Wi-Fi networks: 07', ''],
+            ['BLE devices: 04', ''],
+            ['Channel: 06 / RSSI: -42 dBm', ''],
+            ['Режим демонстрации интерфейса', '']
+          ]
+        },
+        wifi: {
+          title: 'KA-01 // WIFI',
+          lines: [
+            ['● АНАЛИТИКА КАНАЛОВ', 'live'],
+            ['2.4 GHz · 14 channels', ''],
+            ['Channel 01  ▰▰▱▱  -61 dBm', ''],
+            ['Channel 06  ▰▰▰▰  -42 dBm', ''],
+            ['Данные приведены для макета', '']
+          ]
+        },
+        bluetooth: {
+          title: 'KA-01 // BLUETOOTH',
+          lines: [
+            ['● BLE SCAN / DEMO', 'live'],
+            ['Visible devices: 04', ''],
+            ['Mode: passive monitor', ''],
+            ['Band: 2.4 GHz', ''],
+            ['Симуляция экранного интерфейса', '']
+          ]
+        },
+        device: {
+          title: 'KA-01 // DEVICE',
+          lines: [
+            ['● SYSTEM INFORMATION', 'live'],
+            ['MCU: ESP32-WROOM-32U', ''],
+            ['Display: 2.8" TFT', ''],
+            ['Battery: 86% / 3.7V', ''],
+            ['Firmware: demo interface', '']
+          ]
+        },
+        reboot: {
+          title: 'KA-01 // REBOOT',
+          lines: [
+            ['● SYSTEM CONTROL', 'live'],
+            ['Демонстрационная команда', ''],
+            ['Перезагрузка реального', ''],
+            ['устройства не выполняется.', ''],
+            ['Выбери раздел меню, чтобы продолжить.', '']
+          ]
+        }
+      };
+
+      const simScreen = document.getElementById('simScreen');
+      document.querySelectorAll('.sim-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.sim-tab').forEach(item => {
+            item.classList.remove('active');
+            item.setAttribute('aria-selected', 'false');
+          });
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+
+          const screen = simulatorScreens[tab.dataset.screen];
+          simScreen.replaceChildren();
+
+          const heading = document.createElement('h4');
+          heading.textContent = screen.title;
+          simScreen.appendChild(heading);
+
+          screen.lines.forEach(([text, className]) => {
+            const line = document.createElement('p');
+            line.textContent = text;
+            if (className) line.className = className;
+            simScreen.appendChild(line);
+          });
+        });
+      });
+
+      const scrollTop = document.getElementById('scrollTop');
+      window.addEventListener('scroll', () => {
+        scrollTop.classList.toggle('show', window.scrollY > 400);
+      }, { passive: true });
+
+      scrollTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    })();
+  </script>
+</body>
+</html>
