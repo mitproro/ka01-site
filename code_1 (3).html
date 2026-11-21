@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080a0e">
+<meta name="description" content="KA-01 — проект ВсОШ по труду (технологии): 3D-моделирование корпуса и сборка портативного анализатора беспроводных сетей.">
+<title>KA-01 — портативный анализатор беспроводных сетей</title>
+<style>
+:root{
+  --bg:#080a0e;--panel:#101620;--panel2:#151e2a;--line:#26303d;
+  --text:#f1f5fb;--muted:#9aa7b7;--cyan:#00e5ff;--violet:#7b61ff;
+  --green:#9dffcb;--amber:#ffd080;--red:#ff7385;
+  --radius:20px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{
+  margin:0;overflow-x:hidden;color:var(--text);background:
+  radial-gradient(ellipse at 76% 0%,rgba(123,97,255,.13),transparent 36rem),
+  radial-gradient(ellipse at 8% 23%,rgba(0,229,255,.07),transparent 34rem),var(--bg);
+  font:15px/1.65 var(--sans)
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+img,svg{max-width:100%}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+::selection{background:rgba(0,229,255,.25)}
+.wrap{width:min(1160px,calc(100% - 40px));margin-inline:auto}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--cyan);font:700 11px var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan)}
+.grad{color:var(--cyan);background:linear-gradient(100deg,var(--cyan),#a89aff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.glass{background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1px solid var(--line);box-shadow:0 20px 55px rgba(0,0,0,.23)}
+.section{padding:86px 0}
+.section-head{max-width:760px;margin:0 0 30px}
+.section-head h2{margin:10px 0;font-size:clamp(30px,5vw,48px);line-height:1.1;letter-spacing:-.045em}
+.section-head p{margin:0;color:var(--muted)}
+.card,.bento-card{min-width:0;padding:21px;border-radius:var(--radius);overflow-wrap:anywhere}
+.card h3{margin:0 0 9px;font-size:18px;line-height:1.35}
+.card p{color:var(--muted);margin:8px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:45px;padding:11px 16px;border:1px solid transparent;border-radius:12px;background:var(--cyan);color:#051116;font-weight:800;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 9px 26px rgba(0,229,255,.2)}
+.btn.secondary{color:var(--text);background:rgba(255,255,255,.035);border-color:var(--line)}
+.btn.secondary:hover{color:var(--cyan);border-color:rgba(0,229,255,.45)}
+/* Навигация */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(8,10,14,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+.nav{min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:850;letter-spacing:-.03em}
+.brand-mark{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(0,229,255,.45);border-radius:10px;color:var(--cyan);font:800 12px var(--mono)}
+.navlinks{display:flex;align-items:center;gap:15px;color:var(--muted);font-size:12px}
+.navlinks a:hover{color:var(--cyan)}
+.menu-btn{display:none;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer}
+/* Первый экран */
+.hero{padding:64px 0 43px}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:42px}
+.hero h1{max-width:690px;margin:17px 0;font-size:clamp(42px,6vw,75px);line-height:.99;letter-spacing:-.065em}
+.hero-copy{max-width:640px;color:var(--muted);font-size:16px}
+.hero-copy b{color:var(--text)}
+.actions,.tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:23px}
+.tag{padding:6px 9px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font:10px var(--mono)}
+.photo-frame{position:relative;animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.hero-photo{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center;border:1px solid rgba(0,229,255,.32);border-radius:22px;box-shadow:0 25px 65px rgba(0,0,0,.44)}
+.photo-missing{display:none;aspect-ratio:4/3;place-items:center;text-align:center;padding:25px;border:1px dashed rgba(0,229,255,.4);border-radius:22px;background:#0d131c;color:var(--muted)}
+.photo-missing b{display:block;color:var(--cyan);font-size:20px}
+.photo-missing small{display:block;margin-top:9px;font:11px var(--mono)}
+/* Цифры */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.stat{padding:18px;border-radius:17px}
+.stat strong{display:block;color:var(--cyan);font:750 clamp(18px,2.5vw,26px) var(--mono)}
+.stat span{color:var(--muted);font-size:11px}
+/* Bento */
+.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.b2{grid-column:span 2}.b4{grid-column:span 4}
+.label{color:var(--muted);font:10px var(--mono);letter-spacing:.11em;text-transform:uppercase}
+.value{margin:8px 0 5px;font-size:20px;font-weight:780;letter-spacing:-.025em}
+.sub{color:var(--muted);font-size:12px}
+.row{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px}
+.row b{color:var(--text);text-align:right}
+.row:last-child{border-bottom:0}
+.total{display:flex;justify-content:space-between;gap:12px;margin-top:14px;font-weight:800}
+.total strong{color:var(--cyan);font:800 22px var(--mono)}
+/* Интерактивный симулятор */
+.sim-layout{display:grid;grid-template-columns:.72fr 1.28fr;gap:13px}
+.sim-about,.simulator{padding:21px;border-radius:var(--radius)}
+.sim-about h3{margin:10px 0;font-size:22px}
+.sim-about p{color:var(--muted)}
+.demo-warning{padding:12px 14px;border-left:2px solid var(--amber);border-radius:0 10px 10px 0;background:rgba(255,208,128,.06);color:var(--amber);font-size:12px}
+.simulator{background:#0d121a}
+.sim-topline{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:13px;color:var(--muted);font:10px var(--mono)}
+.sim-led{display:inline-flex;align-items:center;gap:7px}
+.sim-led:before{content:"";width:7px;height:7px;border-radius:50%;background:#697586}
+.sim-led.running:before{background:var(--green);box-shadow:0 0 12px var(--green);animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.35}}
+.sim-screen{min-height:275px;padding:16px;border:1px solid rgba(0,229,255,.31);border-radius:12px;background:#061119;color:#b8faff;font:11px/1.65 var(--mono);box-shadow:inset 0 0 24px rgba(0,229,255,.045)}
+.sim-screen h3{margin:0 0 12px;color:var(--cyan);font-size:13px}
+.sim-screen p{margin:5px 0;color:#a1b3be}
+.sim-screen .live{color:var(--green)}
+.sim-screen .warning{color:var(--amber)}
+.sim-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}
+.simtab{min-height:36px;padding:7px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.025);color:var(--muted);font:10px var(--mono);cursor:pointer;transition:.2s}
+.simtab:hover,.simtab.active{color:var(--cyan);border-color:rgba(0,229,255,.45);background:rgba(0,229,255,.065)}
+.sim-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.sim-actions .btn{min-height:38px;padding:8px 12px;font-size:11px}
+.sim-actions .stop{background:#1b232e;color:var(--text);border-color:var(--line)}
+.sim-progress{height:5px;margin-top:12px;overflow:hidden;border-radius:8px;background:#1a2530}
+.sim-progress span{display:block;width:0;height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width .35s}
+.sim-bars{height:67px;display:flex;align-items:end;gap:5px;margin:9px 0;padding:5px 3px;border-bottom:1px solid rgba(0,229,255,.24)}
+.sim-bars i{flex:1;height:var(--h);min-width:4px;border-radius:3px 3px 0 0;background:linear-gradient(to top,var(--violet),var(--cyan));transition:height .45s}
+.sim-kv{display:grid;grid-template-columns:1fr auto;gap:4px 12px;color:#9daebb}
+.sim-kv b{color:var(--cyan);font-weight:500;text-align:right}
+.sim-note{color:#7e8b9b;font-size:10px;margin-top:8px}
+/* Таблица */
+.table-wrap{max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:16px;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:720px;border-collapse:collapse;background:rgba(15,20,29,.75);font-size:11px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--cyan);font:700 9px var(--mono);text-transform:uppercase}
+td{color:var(--muted)}
+td:first-child{color:var(--text);font-weight:700}
+tr:last-child td{border-bottom:0}
+.highlight td{background:rgba(0,229,255,.045)}
+/* История и функции */
+.cards3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.timeline-card{padding:21px;border-radius:19px}
+.timeline-card h3{font-size:17px;line-height:1.4}
+.timeline-card p{font-size:12px;color:var(--muted)}
+.features{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:11px}
+.feature{grid-column:span 2;padding:20px;border-radius:18px;transition:transform .2s,border-color .2s}
+.feature:hover{transform:translateY(-3px);border-color:rgba(0,229,255,.34)}
+.feature.wide{grid-column:span 3}
+.feature h3{font-size:16px;margin:8px 0}
+.feature p{font-size:12px;color:var(--muted);margin:0}
+.accordion{display:grid;gap:8px;margin-top:14px}
+details{border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.02);overflow:hidden}
+summary{padding:14px 16px;cursor:pointer;list-style:none;font-weight:700}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";float:right;color:var(--cyan);font:19px var(--mono)}
+details[open] summary:after{content:"−"}
+.detail{padding:0 16px 14px;color:var(--muted);font-size:12px}
+.detail p{margin:7px 0}
+/* Чертежи — SVG, без внешних картинок */
+.drawings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.drawing{padding:16px;border-radius:17px;overflow:hidden}
+.drawing svg{width:100%;height:auto;display:block}
+.drawing figcaption{margin-top:10px;color:var(--muted);font-size:11px}
+.drawing figcaption b{color:var(--text)}
+/* Safety */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bullets{padding-left:18px;color:var(--muted);font-size:12px}
+.bullets li{margin:6px 0}
+footer{margin-top:25px;padding:22px 0 29px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top-btn{position:fixed;right:16px;bottom:16px;z-index:15;width:42px;height:42px;border:1px solid var(--line);border-radius:12px;background:#111722;color:var(--cyan);font-size:20px;opacity:0;pointer-events:none;transition:opacity .2s;cursor:pointer}
+.top-btn.show{opacity:1;pointer-events:auto}
+/* Небольшие анимации */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s ease}
+.reveal.visible{opacity:1;transform:none}
+@keyframes signal{0%,100%{opacity:.45}50%{opacity:1}}
+/* Адаптивность */
+@media(max-width:900px){
+  .navlinks{display:none;position:absolute;top:66px;left:0;right:0;padding:15px 20px;background:#080a0e;border-bottom:1px solid var(--line);flex-direction:column;align-items:flex-start}
+  .navlinks.open{display:flex}.menu-btn{display:block}
+  .hero-grid,.sim-layout{grid-template-columns:1fr}
+  .photo-frame{max-width:700px;width:100%;margin:auto}
+  .cards3{grid-template-columns:1fr}
+  .sim-controls{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:650px){
+  .wrap{width:calc(100% - 28px)}
+  .section{padding:62px 0}
+  .hero{padding-top:42px}
+  .hero h1{font-size:clamp(40px,12vw,60px)}
+  .hero-copy{font-size:14px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bento{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .b2,.b4{grid-column:span 2}
+  .features{grid-template-columns:1fr}
+  .feature,.feature.wide{grid-column:auto}
+  .two-col{grid-template-columns:1fr}
+  .drawings{grid-template-columns:1fr}
+  .sim-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sim-screen{min-height:250px}
+  .row{font-size:10px}
+  .glass{background:#111722;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+  .topbar{backdrop-filter:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <nav class="nav wrap" aria-label="Основная навигация">
+    <a class="brand" href="#top"><span class="brand-mark">KA</span><span>KA-01</span></a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="navLinks">Разделы</button>
+    <div class="navlinks" id="navLinks">
+      <a href="#project">Проект</a><a href="#simulator">Симулятор</a>
+      <a href="#analogs">Аналоги</a><a href="#creation">Создание</a>
+      <a href="#drawings">Чертежи</a><a href="#features">Функции</a>
+      <a href="#specs">Характеристики</a><a href="#economy">Смета</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="reveal">
+      <span class="eyebrow">Творческий проект · ВсОШ по труду (технологии)</span>
+      <h1>Технологии прошлого — <span class="grad">традиции будущего</span></h1>
+      <p class="hero-copy"><b>3D-моделирование корпуса и сборка портативного устройства для тестирования и анализа беспроводных сетей.</b> Автономный анализатор радиоэфира 2,4 ГГц на базе ESP32 Marauder — модель KA-01.</p>
+      <div class="actions"><a class="btn" href="#project">Изучить проект ↓</a><a class="btn secondary" href="#simulator">Запустить симуляцию</a></div>
+      <div class="tags"><span class="tag">ESP32-WROOM-32U</span><span class="tag">TFT 2.8" тачскрин</span><span class="tag">Антенна 2,4 ГГц</span><span class="tag">АКБ 1100 мА·ч</span></div>
+    </div>
+    <div class="photo-frame reveal">
+      <img class="hero-photo" src="main.jpg" alt="Фотография готового устройства KA-01" fetchpriority="high"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+      <div class="photo-missing"><div><b>Фото KA-01</b>Проверьте, что файл <code>main.jpg</code> лежит рядом с index.html.<small>Используется только main.jpg</small></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap stats reveal">
+  <div class="stat glass"><strong>2,4 ГГц</strong><span>Wi-Fi и BLE</span></div>
+  <div class="stat glass"><strong>153 г</strong><span>масса устройства в сборе</span></div>
+  <div class="stat glass"><strong>4–5 ч</strong><span>автономная работа</span></div>
+  <div class="stat glass"><strong>2 550 ₽</strong><span>себестоимость изделия</span></div>
+</div>
+
+<section class="section" id="project"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Идея и цель</span><h2>Зачем нужен <span class="grad">KA-01</span></h2><p>Актуальность проекта, связь с темой года ВсОШ и задачи разработки.</p></div>
+  <div class="bento">
+    <article class="bento-card b2 glass reveal"><div class="label">Проблема и актуальность</div><div class="value">Перегруженный радиоэфир</div><p class="sub">Проблема: перегрузка каналов Wi-Fi и Bluetooth 2,4 ГГц в школах и домах; дороговизна готовых приборов (5 000–18 000 ₽).</p><p class="sub"><b>Технологии прошлого:</b> радиопеленгация («Охота на лис»), ручной монтаж и пайка плат.</p><p class="sub"><b>Традиции будущего:</b> 3D-моделирование (SketchUp), FDM-печать и цифровой анализ пакетов.</p></article>
+    <article class="bento-card b2 glass reveal"><div class="label">Цель проекта</div><div class="value">Устройство своими руками</div><p class="sub">Спроектировать корпус в САПР и собрать автономный анализатор сетей 2,4 ГГц (модель KA-01).</p></article>
+    <article class="bento-card b4 glass reveal"><div class="label">Задачи проекта</div><p class="sub">1) изучить протоколы Wi-Fi/BLE; 2) сравнить аналоги и выбрать решение по ТРИЗ; 3) напечатать корпус из ABS; 4) спаять схему, прошить ESP32 и провести испытания.</p></article>
+    <article class="bento-card b2 glass reveal"><div class="label">Автор проекта</div><div class="value">Кузьмин Артемий</div><p class="sub">Ученик 9 «Г» класса.</p></article>
+    <article class="bento-card b2 glass reveal"><div class="label">Школа</div><div class="value">МОУ «СОШ № 32»</div><p class="sub">МОУ «СОШ № 32 им. 177 истребительного авиационного московского полка», г. о. Подольск.</p></article>
+  </div>
+</div></section>
+
+<section class="section" id="simulator"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Интерактивная демонстрация</span><h2>Симулятор <span class="grad">функций KA-01</span></h2><p>Выберите режим и нажмите «Запустить». Интерфейс обновляет учебные показатели и графики без подключения к устройству или сети.</p></div>
+  <div class="sim-layout">
+    <article class="sim-about glass reveal">
+      <span class="eyebrow">LOCAL DEMO</span>
+      <h3>Сценарии интерфейса</h3>
+      <p>Можно переключать режимы, запускать и останавливать демонстрацию. Значения синтетические: это не показания KA-01 и не результаты сканирования радиоэфира.</p>
+      <div class="demo-warning">Тестовые функции работают только как визуальная симуляция в браузере. Сайт не отправляет Wi-Fi/Bluetooth-пакеты и не подключается к LAN.</div>
+    </article>
+    <div class="simulator glass reveal">
+      <div class="sim-topline"><span>KA-01 / UI SIMULATOR</span><span class="sim-led" id="simLed">ОСТАНОВЛЕНО</span></div>
+      <div class="sim-screen" id="simScreen" aria-live="polite"></div>
+      <div class="sim-controls" role="tablist" aria-label="Режимы симулятора">
+        <button class="simtab active" data-mode="recon" role="tab" aria-selected="true">Recon</button>
+        <button class="simtab" data-mode="wifi" role="tab" aria-selected="false">WiFi</button>
+        <button class="simtab" data-mode="lan" role="tab" aria-selected="false">LAN</button>
+        <button class="simtab" data-mode="stress" role="tab" aria-selected="false">Стресс-тест</button>
+        <button class="simtab" data-mode="ble" role="tab" aria-selected="false">BLE</button>
+        <button class="simtab" data-mode="device" role="tab" aria-selected="false">Device</button>
+        <button class="simtab" data-mode="reboot" role="tab" aria-selected="false">Reboot</button>
+      </div>
+      <div class="sim-actions">
+        <button class="btn" id="startSim">Запустить</button>
+        <button class="btn stop" id="stopSim">Остановить</button>
+        <button class="btn secondary" id="resetSim">Сбросить</button>
+      </div>
+      <div class="sim-progress" aria-label="Прогресс демонстрации"><span id="simProgress"></span></div>
+      <div class="sim-note">Данные и значения на экране — только демонстрационные.</div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section" id="analogs"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Исследование аналогов</span><h2>Сравнение <span class="grad">решений</span></h2><p>Сопоставление исторических и современных решений с моделью KA-01.</p></div>
+  <div class="table-wrap reveal"><table>
+    <thead><tr><th>Решение / аналог</th><th>Портативность</th><th>Экран и управление</th><th>Антенна 2,4 ГГц</th><th>Главный вывод</th></tr></thead>
+    <tbody>
+      <tr><td>Пеленгатор «Охота на лис» (XX в.)</td><td>Низкая (громоздкий)</td><td>Стрелочный индикатор</td><td>Направленная ферритовая</td><td>Аналоговый, не видит пакеты</td></tr>
+      <tr><td>Ноутбук + ПО Wireshark / inSSIDer</td><td>Низкая (нужен ПК)</td><td>Экран ПК, клавиатура</td><td>Встроенная в ноутбук</td><td>Неудобно обходить помещения</td></tr>
+      <tr><td>DIY-сборки (ESP8266 / CYD)</td><td>Средняя (часто без АКБ)</td><td>Мелкий 0,96" или без АКБ</td><td>Слабая печатная на плате</td><td>Малая дальность и хрупкость</td></tr>
+      <tr><td>Flipper Zero + Wi-Fi Devboard</td><td>Высокая</td><td>Малый монохромный, кнопки</td><td>Внешняя на модуле</td><td>Высокая цена (от 15 000 ₽)</td></tr>
+      <tr class="highlight"><td>Модель KA-01 (авторский проект)</td><td>Высокая (153 г, АКБ)</td><td>Цветной 2.8" TFT тачскрин</td><td>Внешняя всенаправленная</td><td>Оптимален: 2 550 ₽, без минусов</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section class="section" id="creation"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">От идеи до устройства</span><h2>История <span class="grad">создания</span></h2></div>
+  <div class="cards3">
+    <article class="timeline-card glass reveal"><span class="eyebrow">ЭТАП 01 · ИДЕЯ</span><h3>Начало пути: M5Stick C2+ и ВсОШ</h3><p>Идея началась с покупки готового устройства M5Stick C2+. В процессе использования я понял, что оно имеет ряд ограничений: маленький экран, закрытая архитектура и невозможность свободно дорабатывать код и «железо».</p><p>Так родилась цель: создать собственное устройство с нуля и заявить проект на Всероссийскую олимпиаду школьников (ВсОШ) по технологии.</p></article>
+    <article class="timeline-card glass reveal"><span class="eyebrow">ЭТАП 02 · ПРОЕКТИРОВАНИЕ</span><h3>Трудности проектирования и 3D-печати</h3><p>Первая 3D-печать корпуса пошла не по плану: размеры внутренних креплений не подошли под плату, пришлось полностью переделывать 3D-модель в SketchUp.</p><p>После корректировки модель нарезана в Polygon X и напечатана на PICASO Designer из ABS-пластика. Внешняя антенна вынесена наружу для лучшего приёма.</p></article>
+    <article class="timeline-card glass reveal"><span class="eyebrow">ЭТАП 03 · СБОРКА</span><h3>Сборка и прошивка</h3><p>Пайка ESP32, модуля заряда TP4056 и повышающего преобразователя. Установка дисплея, калибровка резистивного тачскрина под стилус, прошивка ESP32 Marauder и тестирование функций.</p><p>Это был долгий путь, но я смог довести проект до конца.</p></article>
+  </div>
+</div></section>
+
+<section class="section" id="drawings"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Конструкторская документация</span><h2>Чертежи <span class="grad">корпуса</span></h2><p>Схематичные SVG-чертежи по указанным в презентации размерам. Это иллюстрации для сайта, не замена рабочим чертежам из ПЗ.</p></div>
+  <div class="drawings">
+    <figure class="drawing glass reveal">
+      <svg viewBox="0 0 640 390" role="img" aria-label="Схематичный чертёж основания корпуса, вид сверху">
+        <defs><marker id="arrowA" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0L8 4 0 8z" fill="#00e5ff"/></marker></defs>
+        <rect x="155" y="66" width="330" height="250" rx="20" fill="#101923" stroke="#00e5ff" stroke-width="2"/>
+        <rect x="177" y="88" width="286" height="206" rx="13" fill="none" stroke="#7b61ff" stroke-width="2" stroke-dasharray="7 6"/>
+        <circle cx="180" cy="91" r="6" fill="#080a0e" stroke="#b0bdca"/><circle cx="460" cy="91" r="6" fill="#080a0e" stroke="#b0bdca"/>
+        <circle cx="180" cy="291" r="6" fill="#080a0e" stroke="#b0bdca"/><circle cx="460" cy="291" r="6" fill="#080a0e" stroke="#b0bdca"/>
+        <line x1="155" y1="42" x2="485" y2="42" stroke="#00e5ff" marker-start="url(#arrowA)" marker-end="url(#arrowA)"/>
+        <line x1="155" y1="48" x2="155" y2="64" stroke="#00e5ff"/><line x1="485" y1="48" x2="485" y2="64" stroke="#00e5ff"/>
+        <text x="287" y="31" fill="#dceaf0" font-family="monospace" font-size="16">102 мм</text>
+        <line x1="515" y1="66" x2="515" y2="316" stroke="#00e5ff" marker-start="url(#arrowA)" marker-end="url(#arrowA)"/>
+        <line x1="490" y1="66" x2="522" y2="66" stroke="#00e5ff"/><line x1="490" y1="316" x2="522" y2="316" stroke="#00e5ff"/>
+        <text x="531" y="198" fill="#dceaf0" font-family="monospace" font-size="16" transform="rotate(90 531 198)">80 мм</text>
+        <text x="220" y="180" fill="#00e5ff" font-family="monospace" font-size="16">ОСНОВАНИЕ</text>
+        <text x="205" y="207" fill="#9aa7b7" font-family="monospace" font-size="12">место для электронных узлов</text>
+        <text x="167" y="355" fill="#9aa7b7" font-family="monospace" font-size="12">ВИД СВЕРХУ · схема по презентации</text>
+      </svg>
+      <figcaption><b>Основание · вид сверху</b>Габарит основания по презентации: 102 × 80 × 25 мм.</figcaption>
+    </figure>
+
+    <figure class="drawing glass reveal">
+      <svg viewBox="0 0 640 390" role="img" aria-label="Схематичный чертёж крышки-рамки">
+        <defs><marker id="arrowB" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0L8 4 0 8z" fill="#7b61ff"/></marker></defs>
+        <rect x="135" y="76" width="370" height="230" rx="25" fill="#141923" stroke="#7b61ff" stroke-width="3"/>
+        <rect x="170" y="108" width="300" height="165" rx="9" fill="#080e15" stroke="#00e5ff" stroke-width="2"/>
+        <path d="M185 244h270" stroke="#4c5968" stroke-width="2"/>
+        <circle cx="320" cy="288" r="5" fill="#9aa7b7"/>
+        <line x1="135" y1="50" x2="505" y2="50" stroke="#7b61ff" marker-start="url(#arrowB)" marker-end="url(#arrowB)"/>
+        <text x="287" y="38" fill="#dceaf0" font-family="monospace" font-size="16">102 мм</text>
+        <text x="229" y="185" fill="#00e5ff" font-family="monospace" font-size="17">ОКНО ДИСПЛЕЯ</text>
+        <text x="238" y="211" fill="#9aa7b7" font-family="monospace" font-size="12">TFT 2.8" · схема</text>
+        <text x="180" y="347" fill="#9aa7b7" font-family="monospace" font-size="12">КРЫШКА-РАМКА · условное изображение</text>
+      </svg>
+      <figcaption><b>Крышка-рамка</b>Схема лицевой панели и окна дисплея; не в масштабе.</figcaption>
+    </figure>
+
+    <figure class="drawing glass reveal">
+      <svg viewBox="0 0 640 390" role="img" aria-label="Схема корпуса сбоку с общей толщиной">
+        <defs><marker id="arrowC" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0L8 4 0 8z" fill="#00e5ff"/></marker></defs>
+        <path d="M118 183Q118 150 150 150H475Q510 150 510 183V232H118z" fill="#151d28" stroke="#00e5ff" stroke-width="2"/>
+        <path d="M132 232H496V260Q496 278 477 278H151Q132 278 132 260z" fill="#252b37" stroke="#7b61ff" stroke-width="2"/>
+        <line x1="540" y1="150" x2="540" y2="278" stroke="#00e5ff" marker-start="url(#arrowC)" marker-end="url(#arrowC)"/>
+        <line x1="510" y1="150" x2="548" y2="150" stroke="#00e5ff"/><line x1="496" y1="278" x2="548" y2="278" stroke="#00e5ff"/>
+        <text x="555" y="220" fill="#dceaf0" font-family="monospace" font-size="15" transform="rotate(90 555 220)">26 мм</text>
+        <text x="180" y="200" fill="#00e5ff" font-family="monospace" font-size="15">КРЫШКА</text>
+        <text x="180" y="258" fill="#dceaf0" font-family="monospace" font-size="14">ОСНОВАНИЕ</text>
+        <text x="162" y="335" fill="#9aa7b7" font-family="monospace" font-size="12">ВИД СБОКУ · общая высота корпуса</text>
+      </svg>
+      <figcaption><b>Корпус · вид сбоку</b>Общая толщина изделия по презентации — 26 мм.</figcaption>
+    </figure>
+
+    <figure class="drawing glass reveal">
+      <svg viewBox="0 0 640 390" role="img" aria-label="Схема расположения модулей внутри корпуса">
+        <rect x="80" y="72" width="480" height="245" rx="22" fill="#101720" stroke="#526071" stroke-width="2"/>
+        <rect x="116" y="106" width="174" height="105" rx="9" fill="#111b26" stroke="#00e5ff" stroke-width="2"/>
+        <text x="148" y="154" fill="#00e5ff" font-family="monospace" font-size="18">ESP32</text>
+        <text x="142" y="181" fill="#9aa7b7" font-family="monospace" font-size="12">WROOM-32U</text>
+        <rect x="326" y="105" width="92" height="54" rx="7" fill="#151923" stroke="#7b61ff" stroke-width="2"/>
+        <text x="345" y="138" fill="#d8d2ff" font-family="monospace" font-size="12">TP4056</text>
+        <rect x="437" y="105" width="91" height="54" rx="7" fill="#151923" stroke="#7b61ff" stroke-width="2"/>
+        <text x="448" y="138" fill="#d8d2ff" font-family="monospace" font-size="11">DC-DC 5V</text>
+        <rect x="326" y="180" width="202" height="91" rx="9" fill="#18232c" stroke="#00e5ff" stroke-width="2"/>
+        <text x="383" y="220" fill="#00e5ff" font-family="monospace" font-size="14">Li-Po</text>
+        <text x="369" y="244" fill="#9aa7b7" font-family="monospace" font-size="12">1100 мА·ч</text>
+        <path d="M290 156H326M418 132H437M371 159V180" stroke="#687788" stroke-width="2" stroke-dasharray="5 5"/>
+        <text x="144" y="294" fill="#9aa7b7" font-family="monospace" font-size="11">УСЛОВНАЯ КОМПОНОВКА · не электрическая схема</text>
+      </svg>
+      <figcaption><b>Расположение модулей</b>Условная компоновочная схема по составу изделия.</figcaption>
+    </figure>
+  </div>
+</div></section>
+
+<section class="section" id="features"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Функции устройства</span><h2>Возможности <span class="grad">KA-01</span></h2><p>Описание режимов из материалов проекта. Использование — только в учебной среде и на собственном оборудовании.</p></div>
+  <div class="features">
+    <article class="feature glass reveal"><div>📡</div><h3>Recon (Разведка) и Пассивный перехват</h3><p>Пассивное наблюдение за беспроводной активностью.</p></article>
+    <article class="feature glass reveal"><div>📊</div><h3>Аналитика WiFi</h3><p>Изучение каналов и сетевой активности.</p></article>
+    <article class="feature glass reveal"><div>🛡️</div><h3>Сканеры LAN</h3><p>Обзор устройств собственной локальной сети.</p></article>
+    <article class="feature wide glass reveal"><div>🧪</div><h3>Стресс-тестирование</h3><p>Учебная демонстрация устойчивости на собственном оборудовании и стендах.</p></article>
+    <article class="feature wide glass reveal"><div>🔵</div><h3>Аудит BLE</h3><p>Изучение BLE-устройств и принципов беспроводной связи.</p></article>
+  </div>
+  <div class="accordion">
+    <details><summary>📡 Recon (Разведка) и Пассивный перехват</summary><div class="detail"><p><b>Start WiFi/BLE:</b> Фоновый сбор MAC-адресов без отправки ответных сигналов.</p><p><b>Probe Request Sniff:</b> Видит список сетей, которые ищут смартфоны вокруг.</p><p><b>Deauth Sniff:</b> Режим радио-обороны. Сигнализирует, если кто-то пытается глушить эфир.</p></div></details>
+    <details><summary>📊 Аналитика WiFi и Спектр</summary><div class="detail"><p><b>Channel Analyzer:</b> График загруженности всех 14 каналов. Показывает, где «пробка».</p><p><b>Packet Monitor:</b> Осциллограф сетевой активности.</p><p><b>Raw Capture:</b> Сохранение дампов трафика в .pcap для анализа в Wireshark.</p></div></details>
+    <details><summary>🛡️ Сканеры уязвимостей (LAN)</summary><div class="detail"><p><b>Ping/ARP Scan:</b> Показывает все подключенные к роутеру устройства и их IP/MAC.</p><p><b>Port Scan:</b> Поиск открытых портов уязвимых устройств.</p></div></details>
+    <details><summary>🛡 Стресс-тестирование Wi-Fi (Аудит устойчивости)</summary><div class="detail"><p class="demo-warning">⚠ Исключительно для проверки собственных сетей и демонстрации на стендах!</p><p><b>Beacon Spam:</b> генерация тестовых маяков для проверки стабильности клиентских устройств в учебной среде.</p><p><b>Deauth Flood:</b> имитация теста устойчивости только на собственном стендовом оборудовании.</p><p><b>Evil Portal:</b> локальная демонстрационная страница для наглядного изучения рисков подключения к открытым точкам доступа.</p></div></details>
+    <details><summary>🔵 Аудит Bluetooth и BLE</summary><div class="detail"><p><b>BLE Advertisement Test (Sour Apple / Swiftpair):</b> изучение механизмов обработки запросов сопряжения в iOS и Windows.</p><p><b>Detect Card Skimmer:</b> пассивное сканирование эфира на наличие подозрительных скрытых Bluetooth-модулей.</p></div></details>
+  </div>
+</div></section>
+
+<section class="section" id="specs"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Технический паспорт</span><h2>Характеристики <span class="grad">KA-01</span></h2></div>
+  <div class="bento">
+    <article class="bento-card b2 glass reveal"><div class="label">Параметры и компоненты</div><div class="row"><span>Габариты</span><b>102 × 80 × 26 мм</b></div><div class="row"><span>Масса корпуса</span><b>ABS — 52 г</b></div><div class="row"><span>Масса в сборе</span><b>153 г</b></div><div class="row"><span>Контроллер</span><b>ESP32-WROOM-32U</b></div><div class="row"><span>Архитектура</span><b>2x Xtensa LX6, 240 MHz</b></div><div class="row"><span>Дисплей</span><b>2.8" TFT SPI 240×320 + тачскрин</b></div></article>
+    <article class="bento-card b2 glass reveal"><div class="label">Связь и питание</div><div class="row"><span>Wi-Fi</span><b>802.11 b/g/n (2.4 GHz)</b></div><div class="row"><span>Bluetooth</span><b>v4.2 BR/EDR + BLE</b></div><div class="row"><span>Антенна</span><b>Внешняя 2.4 GHz (SMA)</b></div><div class="row"><span>Аккумулятор</span><b>Li-Po 3,7 В 1100 мА·ч</b></div><div class="row"><span>Зарядка</span><b>TP4056 (5V)</b></div><div class="row"><span>Потребление (актив)</span><b>~220-250 mA</b></div><div class="row"><span>Автономность</span><b>4–5 часов</b></div></article>
+    <article class="bento-card b4 glass reveal"><div class="label">Приём и управление</div><div class="value">100–150 м · открытая местность</div><p class="sub">С внешней SMA-антенной: примерно до 100–150 м на открытой местности и около 50 м в помещении (через стены). Резистивный сенсорный экран 2.8" — точная навигация стилусом.</p><p class="sub">Полный проход по 14 каналам за ~20 сек; фиксация MAC-адресов и RSSI в реальном времени.</p></article>
+    <article class="bento-card b4 glass reveal"><div class="label">Время производства</div><div class="row"><span>3D-печать корпуса</span><b>до 10 часов</b></div><div class="row"><span>Сборка и пайка электроники</span><b>до 24 часов</b></div><div class="row"><span>Настройка и прошивка</span><b>до 2 часов</b></div></article>
+  </div>
+</div></section>
+
+<section class="section" id="economy"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Экономическая оценка</span><h2>Смета проекта <span class="grad">BOM</span></h2><p>Калькуляция затрат на комплектующие, материалы и электроэнергию.</p></div>
+  <article class="bento-card b4 glass reveal">
+    <div class="row"><span>1. Микроконтроллер ESP32-WROOM-32U — плата разработки (SoC), 1 шт.</span><b>592 ₽</b></div>
+    <div class="row"><span>2. Дисплей 2.8" TFT SPI 240×320 v1.2 — с резистивным тачскрином, 1 шт.</span><b>705 ₽</b></div>
+    <div class="row"><span>3. Внешняя антенна 2,4 ГГц с пигтейлом — разъём U.FL — SMA, 1 шт.</span><b>250 ₽</b></div>
+    <div class="row"><span>4. Аккумулятор Li-Po LP102540-PCM — 3,7 В, 1100 мА·ч с защитой, 1 шт.</span><b>400 ₽</b></div>
+    <div class="row"><span>5. Модуль зарядки TP4056 — контроллер заряда Li-Po, 1 шт.</span><b>56 ₽</b></div>
+    <div class="row"><span>6. Повышающий преобразователь DC-DC — выход 5 В, до 3 А, 1 шт.</span><b>210 ₽</b></div>
+    <div class="row"><span>7. Макетная плата, выключатель, провода — монтажные расходники и крепёж, 1 компл.</span><b>237 ₽</b></div>
+    <div class="row"><span>8. Основание и крышка корпуса (3D-печать) — пластик ABS (52 г / 50 см³), 1 компл.</span><b>50 ₽</b></div>
+    <div class="row"><span>9. Затраченная электроэнергия — PICASO Designer (5,36 кВт·ч × 9,32 ₽)</span><b>50 ₽</b></div>
+    <div class="total"><span>ИТОГО СЕБЕСТОИМОСТЬ ИЗДЕЛИЯ:</span><strong>2 550 ₽</strong></div>
+  </article>
+  <div class="bento" style="margin-top:12px">
+    <article class="bento-card b2 glass"><div class="label">Себестоимость</div><div class="value">2 550 ₽</div><p class="sub">Лимит ВсОШ — до 15 000 ₽.</p></article>
+    <article class="bento-card b2 glass"><div class="label">Цена аналогов</div><div class="value">5 000 – 18 000 ₽</div></article>
+    <article class="bento-card b4 glass"><div class="label">Экономический эффект</div><div class="value">В 4–7 раз дешевле</div><p class="sub">Экономия до 15 450 ₽.</p></article>
+  </div>
+</div></section>
+
+<section class="section" id="safety"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Ответственное использование</span><h2>Безопасность и <span class="grad">экология</span></h2></div>
+  <div class="two-col">
+    <article class="card glass reveal"><h3>🤝 Киберэтика</h3><p>Данное устройство создано исключительно для <b>образовательных целей</b> и защиты собственных сетей. Мы категорически против использования KA-01 для взлома, создания помех, нарушения приватности или любого вреда другим пользователям.</p><ul class="bullets"><li>Не вмешивайтесь в чужие сети без письменного разрешения владельца.</li><li>Уважайте право на приватность и не собирайте данные посторонних людей.</li><li>Используйте знания для защиты, а не для атак.</li></ul></article>
+    <article class="card glass reveal"><h3>⚠️ Безопасность эксплуатации</h3><ul class="bullets"><li><b>Аккумулятор:</b> не подвергайте Li-Po нагреву, ударам или проколам.</li><li><b>Помехи:</b> не используйте активные функции рядом с больницами, аэропортами и критической инфраструктурой.</li><li><b>Антенна:</b> соблюдайте применимые нормы безопасности.</li><li><b>Монтаж:</b> не включать без антенны.</li></ul></article>
+    <article class="card glass reveal"><h3>🌱 Экологическая безопасность</h3><ul class="bullets"><li><b>Пластик ABS:</b> в презентации проекта указана маркировка «9» и возможность вторичной переработки.</li><li><b>Минимум отходов:</b> аддитивная FDM-печать исключает стружку.</li><li><b>Многоразовый АКБ:</b> Li-Po аккумулятор заменяет одноразовые батарейки.</li></ul></article>
+    <article class="card glass reveal"><h3>⚖️ Законы РФ</h3><p><b>149-ФЗ «Об информации...»</b></p><p><b>152-ФЗ «О персональных данных»</b></p><p><b>УК РФ (ст. 272, 273)</b></p><p><b>КоАП РФ (ст. 13.3, 13.4)</b></p><p class="demo-warning">Указаны нормативные акты, приведённые в материалах проекта. Раздел не является юридической консультацией.</p></article>
+  </div>
+</div></section>
+
+<section class="section" id="results"><div class="wrap">
+  <div class="section-head reveal"><span class="eyebrow">Результаты</span><h2>Выводы и <span class="grad">перспективы</span></h2></div>
+  <div class="bento">
+    <article class="bento-card b2 glass reveal"><div class="label">Итог проекта</div><div class="value">От идеи до готового устройства</div><p class="sub">Корпус спроектирован в SketchUp и напечатан из ABS; устройство собрано, протестировано и готово к работе в школе и быту.</p></article>
+    <article class="bento-card b2 glass reveal"><div class="label">Перспективы развития</div><div class="value">Развитие проекта</div><p class="sub">Установка направленных антенн Яги/патч и GPS-модуля для картирования сетей (Wardriving).</p></article>
+    <article class="bento-card b4 glass reveal"><div class="label">Спасибо за внимание!</div><div class="value">KA-01 · проект ВсОШ</div><p class="sub">Кузьмин Артемий · ученик 9 «Г» класса · МОУ «СОШ № 32 им. 177 истребительного авиационного московского полка», г. о. Подольск.</p></article>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap footer"><span>KA-01 — портативный анализатор беспроводных сетей</span><span>Творческий проект ВсОШ по труду (технологии) · 2026 / 2027 учебный год</span></div></footer>
+<button class="top-btn" id="topBtn" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Мобильное меню */
+  const menuBtn=document.getElementById("menuBtn");
+  const navLinks=document.getElementById("navLinks");
+  menuBtn.addEventListener("click",function(){
+    const open=navLinks.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded",String(open));
+  });
+  navLinks.querySelectorAll("a").forEach(function(link){
+    link.addEventListener("click",function(){
+      navLinks.classList.remove("open");
+      menuBtn.setAttribute("aria-expanded","false");
+    });
+  });
+
+  /* Симулятор: синтетические данные, локально, без сетевых запросов */
+  const modeInfo={
+    recon:{title:"RECON · обзор эфира",initial:["Режим: пассивное наблюдение","Состояние: готов к запуску","Сети в учебном наборе: 06","Показатели не являются измерениями"]},
+    wifi:{title:"WIFI · анализ каналов",initial:["Диапазон: 2,4 ГГц","Каналы в демонстрации: 14","График: условная загрузка","Запустите обновление для анимации"]},
+    lan:{title:"LAN · обзор стенда",initial:["Сценарий: учебная локальная сеть","Найдено условных узлов: 04","Сканирование реальной сети: отключено","Данные сформированы симулятором"]},
+    stress:{title:"STRESS TEST · стенд",initial:["Режим: демонстрация нагрузки","Передача пакетов: отсутствует","Условная загрузка: 00%","Используйте только учебные стенды"]},
+    ble:{title:"BLE · пассивный аудит",initial:["Условных BLE-меток: 03","Режим: демонстрационный","Реальное радио: не используется","Данные не относятся к реальным устройствам"]},
+    device:{title:"DEVICE · паспорт устройства",initial:["MCU: ESP32-WROOM-32U","Дисплей: 2.8\" TFT","Аккумулятор: Li-Po 1100 мА·ч","Автономность: 4–5 часов"]},
+    reboot:{title:"REBOOT · перезапуск интерфейса",initial:["Это демонстрационный интерфейс.","Реальное устройство не подключено.","Запуск не перезагружает оборудование.","Нажмите «Сбросить» для возврата."]}
+  };
+
+  let currentMode="recon";
+  let running=false;
+  let timer=null;
+  let progress=0;
+  let tick=0;
+
+  const screen=document.getElementById("simScreen");
+  const led=document.getElementById("simLed");
+  const progressBar=document.getElementById("simProgress");
+  const startBtn=document.getElementById("startSim");
+  const stopBtn=document.getElementById("stopSim");
+  const resetBtn=document.getElementById("resetSim");
+
+  function pseudoValues(){
+    const base=[31,52,42,76,59,89,47,68,36,55,73,44,63,39];
+    return base.map(function(v,i){
+      return Math.max(12,Math.min(96,v+((tick*(i+3)*7)%23)-11));
+    });
+  }
+
+  function renderScreen(){
+    const info=modeInfo[currentMode];
+    screen.replaceChildren();
+
+    const title=document.createElement("h3");
+    title.textContent="KA-01 // "+info.title;
+    screen.appendChild(title);
+
+    const status=document.createElement("p");
+    status.className="live";
+    status.textContent=running?"● ДЕМОНСТРАЦИЯ ВЫПОЛНЯЕТСЯ":"● "+(currentMode==="device"?"ПАСПОРТНЫЙ ЭКРАН":"ГОТОВ К ДЕМОНСТРАЦИИ");
+    screen.appendChild(status);
+
+    if(currentMode==="wifi"){
+      const label=document.createElement("p");
+      label.textContent="Условная загрузка каналов 01–14";
+      screen.appendChild(label);
+      const chart=document.createElement("div");
+      chart.className="sim-bars";
+      pseudoValues().forEach(function(value){
+        const bar=document.createElement("i");
+        bar.style.setProperty("--h",value+"%");
+        chart.appendChild(bar);
+      });
+      screen.appendChild(chart);
+      const note=document.createElement("p");
+      note.textContent="Учебные значения · не данные радиоизмерения";
+      screen.appendChild(note);
+    }else if(currentMode==="stress"){
+      const value=running?Math.min(88,18+(tick*9)%70):0;
+      const label=document.createElement("p");
+      label.textContent="Условная нагрузка стенда: "+String(value).padStart(2,"0")+"%";
+      screen.appendChild(label);
+      const bar=document.createElement("div");
+      bar.className="sim-progress";
+      const fill=document.createElement("span");
+      fill.style.width=value+"%";
+      bar.appendChild(fill);
+      screen.appendChild(bar);
+      const warning=document.createElement("p");
+      warning.className="warning";
+      warning.textContent="Симуляция не отправляет пакеты и не воздействует на сеть.";
+      screen.appendChild(warning);
+      info.initial.slice(1).forEach(function(text){
+        const p=document.createElement("p");p.textContent=text;screen.appendChild(p);
+      });
+    }else if(currentMode==="lan"){
+      const list=document.createElement("div");
+      list.className="sim-kv";
+      const rows=[
+        ["Условный узел 01","активен"],
+        ["Условный узел 02","активен"],
+        ["Условный узел 03",running?"проверяется":"ожидание"],
+        ["Условный узел 04","ожидание"]
+      ];
+      rows.forEach(function(row){
+        const name=document.createElement("span");name.textContent=row[0];
+        const state=document.createElement("b");state.textContent=row[1];
+        list.append(name,state);
+      });
+      screen.appendChild(list);
+      const note=document.createElement("p");note.textContent="Учебный список · адреса реальных устройств не сканируются";screen.appendChild(note);
+    }else{
+      info.initial.forEach(function(text,index){
+        const p=document.createElement("p");
+        p.textContent=text;
+        if(index===0 && running)p.className="live";
+        screen.appendChild(p);
+      });
+      if(currentMode==="recon"&&running){
+        const count=document.createElement("p");
+        count.textContent="Условных сетей в цикле: "+(6+(tick%4));
+        screen.appendChild(count);
+      }
+      if(currentMode==="ble"&&running){
+        const count=document.createElement("p");
+        count.textContent="Демонстрационный проход: "+(tick%5+1)+" / 5";
+        screen.appendChild(count);
+      }
+    }
+
+    const note=document.createElement("div");
+    note.className="sim-note";
+    note.textContent="Локальная симуляция · физическое устройство не подключено";
+    screen.appendChild(note);
+  }
+
+  function setRunning(value){
+    running=value;
+    led.classList.toggle("running",running);
+    led.textContent=running?"ДЕМО ЗАПУЩЕНО":"ОСТАНОВЛЕНО";
+    startBtn.disabled=running;
+    startBtn.style.opacity=running?".55":"1";
+    renderScreen();
+  }
+
+  function stopSimulation(){
+    if(timer){clearInterval(timer);timer=null}
+    setRunning(false);
+  }
+
+  document.querySelectorAll(".simtab").forEach(function(button){
+    button.addEventListener("click",function(){
+      stopSimulation();
+      document.querySelectorAll(".simtab").forEach(function(tab){
+        tab.classList.remove("active");
+        tab.setAttribute("aria-selected","false");
+      });
+      button.classList.add("active");
+      button.setAttribute("aria-selected","true");
+      currentMode=button.dataset.mode;
+      progress=0;
+      progressBar.style.width="0%";
+      renderScreen();
+    });
+  });
+
+  startBtn.addEventListener("click",function(){
+    if(running)return;
+    if(currentMode==="reboot"){
+      progress=0;
+      progressBar.style.width="0%";
+      renderScreen();
+      return;
+    }
+    progress=0;
+    tick=0;
+    progressBar.style.width="0%";
+    setRunning(true);
+    timer=setInterval(function(){
+      tick++;
+      progress=Math.min(100,progress+10);
+      progressBar.style.width=progress+"%";
+      renderScreen();
+      if(progress>=100){
+        clearInterval(timer);
+        timer=null;
+        setRunning(false);
+        led.textContent="ДЕМО ЗАВЕРШЕНО";
+      }
+    },450);
+  });
+
+  stopBtn.addEventListener("click",stopSimulation);
+
+  resetBtn.addEventListener("click",function(){
+    stopSimulation();
+    currentMode="recon";
+    progress=0;
+    tick=0;
+    progressBar.style.width="0%";
+    document.querySelectorAll(".simtab").forEach(function(tab){
+      const active=tab.dataset.mode==="recon";
+      tab.classList.toggle("active",active);
+      tab.setAttribute("aria-selected",String(active));
+    });
+    led.textContent="ОСТАНОВЛЕНО";
+    renderScreen();
+  });
+
+  renderScreen();
+
+  /* Кнопка наверх */
+  const topBtn=document.getElementById("topBtn");
+  window.addEventListener("scroll",function(){
+    topBtn.classList.toggle("show",window.scrollY>420);
+  },{passive:true});
+  topBtn.addEventListener("click",function(){
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+
+  /* Ненавязчивое появление блоков; отключается при reduced motion */
+  if("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    const observer=new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },{threshold:.08});
+    document.querySelectorAll(".reveal").forEach(function(item){observer.observe(item)});
+  }else{
+    document.querySelectorAll(".reveal").forEach(function(item){item.classList.add("visible")});
+  }
+})();
+</script>
+</body>
+</html>
