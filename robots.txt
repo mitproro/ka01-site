@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://mitproro.github.io/ka01-site/sitemap.xml
